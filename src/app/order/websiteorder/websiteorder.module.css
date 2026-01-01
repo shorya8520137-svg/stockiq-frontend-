@@ -1,8 +1,8 @@
 .page {
     padding: 24px 32px;
     height: 100%;
-    background: #020617;
-    color: #e5e7eb;
+    background: #f8fafc;
+    color: #0f172a;
     display: flex;
     flex-direction: column;
 }
@@ -25,8 +25,8 @@
     gap: 6px;
     padding: 10px 12px;
     border-radius: 14px;
-    background: #020617;
-    border: 1px solid #1f2937;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     position: relative;
 }
 
@@ -36,12 +36,12 @@
     background: transparent;
     border: none;
     outline: none;
-    color: #e5e7eb;
+    color: #0f172a;
     font-size: 14px;
 }
 
 .searchBox input::placeholder {
-    color: #6b7280;
+    color: #64748b;
 }
 
 /* ================= CHIPS ================= */
@@ -51,21 +51,22 @@
     gap: 6px;
     padding: 4px 10px;
     border-radius: 999px;
-    background: #0f172a;
-    color: #e5e7eb;
+    background: #f1f5f9;
+    color: #475569;
     font-size: 13px;
+    border: 1px solid #e2e8f0;
 }
 
 .chip button {
     background: none;
     border: none;
-    color: #9ca3af;
+    color: #64748b;
     cursor: pointer;
     font-size: 14px;
 }
 
 .chip button:hover {
-    color: #e5e7eb;
+    color: #0f172a;
 }
 
 /* ================= SUGGESTIONS ================= */
@@ -74,11 +75,12 @@
     top: calc(100% + 6px);
     left: 0;
     width: 100%;
-    background: #020617;
-    border: 1px solid #1f2937;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 10px;
     z-index: 20;
     overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .suggestions div {
@@ -88,7 +90,7 @@
 }
 
 .suggestions div:hover {
-    background: #0f172a;
+    background: #f8fafc;
 }
 
 /* ================= FILTERS ================= */
@@ -99,9 +101,9 @@
 }
 
 .filters input[type="date"] {
-    background: #020617;
-    border: 1px solid #1f2937;
-    color: #e5e7eb;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
     padding: 8px 12px;
     border-radius: 10px;
     font-size: 13px;
@@ -112,9 +114,9 @@
     height: 40px;
     width: 40px;
     border-radius: 10px;
-    border: 1px solid #1f2937;
-    background: transparent;
-    color: #e5e7eb;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -122,18 +124,20 @@
 }
 
 .iconBtn:hover {
-    background: #0f172a;
+    background: #f8fafc;
+    border-color: #3b82f6;
 }
 
 /* ================= CARD ================= */
 .card {
     flex: 1;
     border-radius: 18px;
-    border: 1px solid #1f2937;
-    background: linear-gradient(180deg, #020617, #020617);
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* ================= TABLE ================= */
@@ -150,30 +154,30 @@
 .table thead th {
     position: sticky;
     top: 0;
-    background: #020617;
+    background: #f8fafc;
     z-index: 5;
     text-align: left;
     padding: 16px;
     font-size: 14px;
     font-weight: 600;
-    border-bottom: 1px solid #1f2937;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .table tbody td {
     padding: 16px;
     font-size: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: #f8fafc;
 }
 
 /* ================= EMPTY ================= */
 .empty {
     text-align: center;
     padding: 32px;
-    color: #9ca3af;
+    color: #64748b;
 }
 
 /* ================= STATUS ================= */
@@ -186,8 +190,9 @@
 }
 
 .pending {
-    background: #1f2937;
-    color: #e5e7eb;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
 }
 
 .intransit {
@@ -217,9 +222,9 @@
 .pagination button {
     padding: 8px 14px;
     border-radius: 10px;
-    border: 1px solid #1f2937;
-    background: transparent;
-    color: #e5e7eb;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
     cursor: pointer;
 }
 
@@ -228,7 +233,12 @@
     cursor: not-allowed;
 }
 
+.pagination button:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #3b82f6;
+}
+
 .pagination span {
-    color: #9ca3af;
+    color: #64748b;
     font-size: 14px;
 }

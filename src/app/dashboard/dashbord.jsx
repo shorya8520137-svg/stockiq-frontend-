@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
     LineChart,
     Line,
@@ -18,6 +19,7 @@ import styles from "./dashboard.module.css";
 const API_BASE = "https://13-201-222-24.nip.io/api/dashboard";
 
 export default function Dashboard() {
+    const { user, logout, hasPermission } = useAuth();
     const [kpis, setKpis] = useState(null);
     const [lineData, setLineData] = useState([]);
     const [barData, setBarData] = useState([]);
@@ -61,10 +63,9 @@ export default function Dashboard() {
 
     return (
         <div className={styles.pageScroll}>
-
             {/* KPI ROW */}
             <section className={styles.kpis}>
-                <div className={styles.kpi}><span>Dispatches</span><b>{kpis?.dispatches ?? "-"}</b></div>
+                <div className={styles.kpi}><span>Orders</span><b>{kpis?.dispatches ?? "-"}</b></div>
                 <div className={styles.kpi}><span>Revenue</span><b>₹{kpis?.revenue ?? "-"}</b></div>
                 <div className={styles.kpi}><span>Cost</span><b>₹{kpis?.cost ?? "-"}</b></div>
                 <div className={styles.kpi}><span>Profit</span><b>₹{kpis?.profit ?? "-"}</b></div>
@@ -91,7 +92,7 @@ export default function Dashboard() {
                 {/* HEATMAP */}
                 <div className={styles.card}>
                     <div className={styles.heatHeader}>
-                        <h3>Dispatch Heatmap</h3>
+                        <h3>Activity Heatmap</h3>
                         <select value={filter} onChange={e => setFilter(e.target.value)}>
                             <option value="week">This Week</option>
                             <option value="last">Last Week</option>

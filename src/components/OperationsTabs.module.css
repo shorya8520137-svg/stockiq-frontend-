@@ -1,0 +1,130 @@
+/* ================= TAB CONTAINER ================= */
+.tabContainer {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+/* ================= TAB HEADER ================= */
+.tabHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    background: #ffffff;
+    color: #64748b;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.tab:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
+}
+
+.tabActive {
+    background: var(--tab-color, #3b82f6);
+    color: white;
+    border-color: var(--tab-color, #3b82f6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tabActive:hover {
+    background: var(--tab-color, #3b82f6);
+    color: white;
+    opacity: 0.9;
+}
+
+.closeBtn {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.closeBtn:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+    color: #ef4444;
+    transform: scale(1.05);
+}
+
+/* ================= TAB CONTENT ================= */
+.tabContent {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #ffffff;
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.tabContent::-webkit-scrollbar {
+    display: none; /* WebKit */
+}
+
+.comingSoon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    color: #64748b;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .tabHeader {
+        padding: 12px 16px;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+
+    .tab {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .tab span {
+        display: none;
+    }
+}

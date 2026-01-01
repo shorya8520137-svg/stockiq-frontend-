@@ -1,0 +1,865 @@
+/* ================= PERMISSIONS CONTAINER ================= */
+.permissionsContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow: hidden;
+}
+
+/* ================= HEADER ================= */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.headerIcon {
+    font-size: 28px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.headerInfo h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.headerInfo span {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.currentUser {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.userBadge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.userRole {
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.userName {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.userEmail {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* ================= ACCESS DENIED ================= */
+.accessDenied {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.accessDeniedContent {
+    text-align: center;
+    background: white;
+    padding: 48px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    border: 1px solid #e2e8f0;
+}
+
+.accessDeniedContent h2 {
+    color: #dc2626;
+    margin-bottom: 16px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.accessDeniedContent p {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.accessDeniedContent code {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 12px;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+}
+
+/* ================= TAB NAVIGATION ================= */
+.tabNav {
+    display: flex;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 24px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tab {
+    background: none;
+    border: none;
+    padding: 16px 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.tab:hover {
+    color: #1e293b;
+    background: linear-gradient(to bottom, transparent, #f8fafc);
+}
+
+.tab.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    background: linear-gradient(to bottom, transparent, #eff6ff);
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: #3b82f6;
+    border-radius: 50%;
+}
+
+.tabIcon {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+.tabLabel {
+    font-weight: 500;
+}
+
+.tab.active .tabIcon {
+    opacity: 1;
+}
+
+.tab.active .tabLabel {
+    font-weight: 600;
+}
+
+/* ================= CONTENT AREA ================= */
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+/* ================= OVERVIEW TAB ================= */
+.overview {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.statCard {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.statCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+}
+
+.statCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.statCard h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.statNumber {
+    font-size: 36px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.statDescription {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+    font-weight: 500;
+}
+
+.rolesOverview {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rolesOverview h3 {
+    margin: 0 0 16px 0;
+    color: #1e293b;
+}
+
+.rolesList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.roleCard {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.roleCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--role-color, #64748b);
+    transition: width 0.3s ease;
+}
+
+.roleCard:hover {
+    border-color: var(--role-color, #64748b);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.roleCard:hover::before {
+    width: 8px;
+}
+
+.roleHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.roleColor {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.roleInfo h4 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 16px;
+}
+
+.roleInfo p {
+    margin: 4px 0 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.roleStats {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* ================= ROLES TAB ================= */
+.rolesTab {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.rolesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 16px;
+}
+
+.roleDetailCard {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.roleDetailCard:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.roleDetailCard.selected {
+    border-color: #667eea;
+}
+
+.roleDetailHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.roleColorLarge {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.roleDetailHeader h3 {
+    margin: 0;
+    color: #1e293b;
+}
+
+.roleDetailHeader p {
+    margin: 4px 0 8px 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.priority {
+    font-size: 12px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.rolePermissions {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.rolePermissions h4 {
+    margin: 0 0 12px 0;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.permissionsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.permissionTag {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+/* ================= PERMISSIONS TAB ================= */
+.permissionsTab {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.permissionCategory {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.permissionCategory h3 {
+    margin: 0 0 16px 0;
+    color: #1e293b;
+    font-size: 18px;
+}
+
+.permissionsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+}
+
+.permissionCard {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s ease;
+}
+
+.permissionCard:hover {
+    border-color: #667eea;
+    background: #f8fafc;
+}
+
+.permissionName {
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 12px;
+    color: #1e293b;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.permissionRoles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.roleTag {
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* ================= USERS TAB ================= */
+.usersTab {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.usersGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.userCard {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+}
+
+.userCard:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.userAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.userInfo {
+    flex: 1;
+}
+
+.userInfo h4 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 16px;
+}
+
+.userInfo p {
+    margin: 4px 0 8px 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.userStats {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* ================= AUDIT TAB ================= */
+.auditTab {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auditHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.auditHeader h3 {
+    margin: 0;
+    color: #1e293b;
+}
+
+.refreshBtn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.refreshBtn:hover {
+    background: #5a67d8;
+}
+
+.auditLog {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.auditEntry {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: grid;
+    grid-template-columns: 150px 200px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    font-size: 14px;
+}
+
+.auditEntry:last-child {
+    border-bottom: none;
+}
+
+.auditTime {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.auditUser {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.auditAction {
+    color: #1e293b;
+}
+
+.auditDetails {
+    color: #64748b;
+    font-size: 12px;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+/* ================= TESTING TAB ================= */
+.testingTab {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.testingHeader {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.testingHeader h3 {
+    margin: 0 0 8px 0;
+    color: #1e293b;
+}
+
+.testingHeader p {
+    margin: 0;
+    color: #64748b;
+}
+
+.roleTestGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.roleTestCard {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+}
+
+.roleTestCard:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.1);
+}
+
+.roleTestCard.currentRole {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.roleTestColor {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+
+.roleTestInfo h4 {
+    margin: 0;
+    color: #1e293b;
+}
+
+.roleTestInfo p {
+    margin: 4px 0 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.currentBadge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #10b981;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.testingWarning {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 12px 16px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+    
+    .tabNav {
+        overflow-x: auto;
+        padding: 0 16px;
+    }
+    
+    .content {
+        padding: 16px;
+    }
+    
+    .statsGrid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .auditEntry {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+}
+/* Connection Status */
+.connectionStatus {
+    margin-right: 1rem;
+}
+
+.statusIndicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.statusIndicator.online {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.statusIndicator.offline {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.statusText {
+    white-space: nowrap;
+}
+
+/* Loading States */
+.loadingState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #6b7280;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3rem;
+    color: #6b7280;
+}
+
+.emptyState p {
+    margin: 0.5rem 0;
+}
+
+.localNote {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Refresh Button States */
+.refreshBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.refreshBtn:disabled:hover {
+    background: #f3f4f6;
+    transform: none;
+}

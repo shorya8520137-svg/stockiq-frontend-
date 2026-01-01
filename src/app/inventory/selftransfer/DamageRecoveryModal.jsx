@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import styles from "./damageRecovery.module.css";
 
 const API = "https://13-201-222-24.nip.io/api/stock";
@@ -9,7 +10,6 @@ export default function DamageRecoveryModal({ onClose }) {
     const [locationType, setLocationType] = useState("WAREHOUSE");
     const [locationQuery, setLocationQuery] = useState("");
     const [locations, setLocations] = useState([]);
-    const [activeLocationIndex, setActiveLocationIndex] = useState(-1);
     const [selectedLocation, setSelectedLocation] = useState(null);
 
     const [action, setAction] = useState("damage");
@@ -23,7 +23,6 @@ export default function DamageRecoveryModal({ onClose }) {
         {
             productQuery: "",
             products: [],
-            activeIndex: -1,
             selectedProduct: null,
             qty: 1,
         },
@@ -44,11 +43,10 @@ export default function DamageRecoveryModal({ onClose }) {
                         ? d.data.warehouses
                         : d.data.stores
                 );
-                setActiveLocationIndex(-1);
             });
     }, [locationQuery, locationType]);
 
-    /* ---------------- PRODUCT SEARCH (PER ROW) ---------------- */
+    /* ---------------- PRODUCT SEARCH ---------------- */
     function searchProduct(value, rowIndex) {
         const updated = [...rows];
         updated[rowIndex].productQuery = value;
@@ -63,38 +61,8 @@ export default function DamageRecoveryModal({ onClose }) {
             .then(r => r.json())
             .then(d => {
                 updated[rowIndex].products = d.data.products || [];
-                updated[rowIndex].activeIndex = -1;
                 setRows([...updated]);
             });
-    }
-
-    /* ---------------- KEYBOARD NAV ---------------- */
-    function handleKeyNav(e, list, rowIndex) {
-        if (!list.length) return;
-
-        const updated = [...rows];
-
-        if (e.key === "ArrowDown") {
-            e.preventDefault();
-            updated[rowIndex].activeIndex =
-                (updated[rowIndex].activeIndex + 1) % list.length;
-        }
-
-        if (e.key === "ArrowUp") {
-            e.preventDefault();
-            updated[rowIndex].activeIndex =
-                (updated[rowIndex].activeIndex - 1 + list.length) % list.length;
-        }
-
-        if (e.key === "Enter" && updated[rowIndex].activeIndex >= 0) {
-            e.preventDefault();
-            const p = list[updated[rowIndex].activeIndex];
-            updated[rowIndex].selectedProduct = p;
-            updated[rowIndex].productQuery = p.product_name;
-            updated[rowIndex].products = [];
-        }
-
-        setRows(updated);
     }
 
     /* ---------------- SUBMIT ---------------- */
@@ -123,10 +91,13 @@ export default function DamageRecoveryModal({ onClose }) {
                         body: JSON.stringify({
                             productType: r.selectedProduct.product_name,
                             barcode: r.selectedProduct.barcode,
-                            inventory:
+
+                            // ✅ FIXED FIELD (THIS WAS THE BUG)
+                            warehouse:
                                 locationType === "WAREHOUSE"
-                                    ? selectedLocation.Warehouse_name.split(" ")[0].toLowerCase()
-                                    : selectedLocation.store_code.toLowerCase(),
+                                    ? selectedLocation.warehouse_code
+                                    : selectedLocation.store_code,
+
                             actionType: action,
                             quantity: Number(r.qty),
                         }),
@@ -138,6 +109,7 @@ export default function DamageRecoveryModal({ onClose }) {
             setTimeout(onClose, 900);
 
         } catch (err) {
+            console.error(err);
             setMsg("Operation failed");
         } finally {
             setLoading(false);
@@ -145,8 +117,25 @@ export default function DamageRecoveryModal({ onClose }) {
     }
 
     return (
-        <div className={styles.overlay}>
-            <div className={styles.panel}>
+        <AnimatePresence>
+            <motion.div 
+                className={styles.overlay}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                onClick={(e) => {
+                    if (e.target === e.currentTarget) onClose();
+                }}
+            >
+                <motion.div 
+                    className={styles.panel}
+                    initial={{ scale: 0.92, y: 10, opacity: 0 }}
+                    animate={{ scale: 1, y: 0, opacity: 1 }}
+                    exit={{ scale: 0.92, y: 10, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    onClick={(e) => e.stopPropagation()}
+                >
                 <button className={styles.close} onClick={onClose}>✕</button>
 
                 <div className={styles.header}>Damage / Recovery</div>
@@ -188,7 +177,9 @@ export default function DamageRecoveryModal({ onClose }) {
                                         className={styles.suggestItem}
                                         onMouseDown={() => {
                                             setSelectedLocation(l);
-                                            setLocationQuery(l.Warehouse_name || l.store_name);
+                                            setLocationQuery(
+                                                l.Warehouse_name || l.store_name
+                                            );
                                             setLocations([]);
                                         }}
                                     >
@@ -216,14 +207,11 @@ export default function DamageRecoveryModal({ onClose }) {
                                     placeholder="Search product"
                                     value={row.productQuery}
                                     onChange={e => searchProduct(e.target.value, idx)}
-                                    onKeyDown={e =>
-                                        handleKeyNav(e, row.products, idx)
-                                    }
                                 />
 
                                 {row.products.length > 0 && (
                                     <div className={styles.suggestBox}>
-                                        {row.products.map((p, i) => (
+                                        {row.products.map(p => (
                                             <div
                                                 key={p.p_id}
                                                 className={styles.suggestItem}
@@ -235,8 +223,12 @@ export default function DamageRecoveryModal({ onClose }) {
                                                     setRows(updated);
                                                 }}
                                             >
-                                                <span className={styles.primary}>{p.product_name}</span>
-                                                <span className={styles.secondary}>{p.barcode}</span>
+                                                <span className={styles.primary}>
+                                                    {p.product_name}
+                                                </span>
+                                                <span className={styles.secondary}>
+                                                    {p.barcode}
+                                                </span>
                                             </div>
                                         ))}
                                     </div>
@@ -268,7 +260,6 @@ export default function DamageRecoveryModal({ onClose }) {
                         setRows([...rows, {
                             productQuery: "",
                             products: [],
-                            activeIndex: -1,
                             selectedProduct: null,
                             qty: 1,
                         }])
@@ -308,7 +299,8 @@ export default function DamageRecoveryModal({ onClose }) {
                 </div>
 
                 {msg && <div className={styles.msg}>{msg}</div>}
-            </div>
-        </div>
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
     );
 }

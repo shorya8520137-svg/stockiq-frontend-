@@ -1,9 +1,12 @@
-import Dashboard from "./dashbord";
+"use client";
 
-export const metadata = {
-    title: "Dashboard",
-};
+import Dashboard from "./dashbord";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function DashboardPage() {
-    return <Dashboard />;
+    return (
+        <ProtectedRoute>
+            <Dashboard />
+        </ProtectedRoute>
+    );
 }

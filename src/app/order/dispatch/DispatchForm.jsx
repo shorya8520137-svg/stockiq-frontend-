@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import styles from "./dispatchForm.module.css";
 
-/* ✅ CORRECT API BASES */
-const API = "https://13-201-222-24.nip.io/api/dispatch";           // search & dropdowns
-const CREATE_API = "https://13-201-222-24.nip.io/api/dispatch-beta"; // submit
+/* ✅ YOUR ORIGINAL API BASES - UNTOUCHED */
+const API = "https://13-201-222-24.nip.io/api/dispatch";
+const CREATE_API = "https://13-201-222-24.nip.io/api/dispatch-beta";
 
 export default function DispatchForm() {
     const [warehouses, setWarehouses] = useState([]);
@@ -12,8 +12,11 @@ export default function DispatchForm() {
     const [executives, setExecutives] = useState([]);
     const [products, setProducts] = useState([{ name: "", qty: 1, suggestions: [] }]);
 
+    // NEW: Stock checking + UI states
+    const [stockData, setStockData] = useState({});
     const [loading, setLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [error, setError] = useState("");
 
     const initialForm = {
         orderType: "Offline",
@@ -35,14 +38,27 @@ export default function DispatchForm() {
     const [form, setForm] = useState(initialForm);
     const update = (k, v) => setForm({ ...form, [k]: v });
 
-    /* ------------------ DROPDOWNS ------------------ */
+    /* ------------------ YOUR ORIGINAL DROPDOWNS ------------------ */
     useEffect(() => {
         fetch(`${API}/warehouses`).then(r => r.json()).then(setWarehouses);
         fetch(`${API}/logistics`).then(r => r.json()).then(setLogistics);
         fetch(`${API}/processed-persons`).then(r => r.json()).then(setExecutives);
     }, []);
 
-    /* ------------------ PRODUCT SEARCH (FIXED) ------------------ */
+    /* ------------------ NEW: STOCK CHECKER ------------------ */
+    const checkStock = async (barcode) => {
+        if (!barcode || stockData[barcode]) return;
+
+        try {
+            const res = await fetch(`https://13-201-222-24.nip.io/api/product-tracking/${barcode}`);
+            const data = await res.json();
+            setStockData(prev => ({ ...prev, [barcode]: data.finalStock || 0 }));
+        } catch {
+            setStockData(prev => ({ ...prev, [barcode]: null }));
+        }
+    };
+
+    /* ------------------ YOUR ORIGINAL PRODUCT SEARCH ------------------ */
     const searchProduct = async (index, value) => {
         const updated = [...products];
         updated[index].name = value;
@@ -54,6 +70,10 @@ export default function DispatchForm() {
             updated[index].suggestions = [];
         }
         setProducts(updated);
+
+        // Extract barcode for stock check
+        const barcodeMatch = value.match(/\| (\w+)$/);
+        if (barcodeMatch) checkStock(barcodeMatch[1]);
     };
 
     const selectProduct = (index, value) => {
@@ -61,6 +81,10 @@ export default function DispatchForm() {
         updated[index].name = value;
         updated[index].suggestions = [];
         setProducts(updated);
+
+        // Extract barcode for stock check
+        const barcodeMatch = value.match(/\| (\w+)$/);
+        if (barcodeMatch) checkStock(barcodeMatch[1]);
     };
 
     const addProduct = () =>
@@ -69,7 +93,7 @@ export default function DispatchForm() {
     const removeProduct = (i) =>
         setProducts(products.filter((_, idx) => idx !== i));
 
-    /* ------------------ SUBMIT (ONLY BETA) ------------------ */
+    /* ------------------ YOUR ORIGINAL SUBMIT (ENHANCED) ------------------ */
     const submitDispatch = async () => {
         if (loading) return;
 
@@ -98,6 +122,7 @@ export default function DispatchForm() {
 
         try {
             setLoading(true);
+            setError("");
 
             const res = await fetch(`${CREATE_API}/create`, {
                 method: "POST",
@@ -105,162 +130,281 @@ export default function DispatchForm() {
                 body: JSON.stringify(payload),
             });
 
-            if (!res.ok) throw new Error("Failed");
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to create dispatch");
+            }
 
             setShowSuccess(true);
-
             setTimeout(() => {
                 setForm(initialForm);
                 setProducts([{ name: "", qty: 1, suggestions: [] }]);
+                setStockData({});
                 setShowSuccess(false);
-            }, 2000);
+            }, 3000);
 
         } catch (err) {
-            console.error(err);
-            alert("Dispatch submission failed");
+            setError(err.message || "Dispatch submission failed");
+            setTimeout(() => setError(""), 5000);
         } finally {
             setLoading(false);
         }
     };
 
-    /* ------------------ SUCCESS CARD ------------------ */
+    /* ------------------ PROFESSIONAL SUCCESS SCREEN ------------------ */
     if (showSuccess) {
         return (
-            <div className={styles.page} style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <div style={{
-                    background: "#0e162b",
-                    padding: "40px",
-                    borderRadius: "14px",
-                    textAlign: "center",
-                    width: "420px"
-                }}>
-                    <h2>Order Placed Successfully</h2>
-                    <p style={{ marginTop: "8px", opacity: 0.8 }}>
-                        Order has been placed successfully for <b>{form.customerName}</b>
-                    </p>
-
-                    <div style={{
-                        margin: "24px auto 0",
-                        width: "40px",
-                        height: "40px",
-                        border: "4px solid rgba(255,255,255,0.2)",
-                        borderTop: "4px solid #4da3ff",
-                        borderRadius: "50%",
-                        animation: "spin 1s linear infinite"
-                    }} />
-
-                    <style jsx>{`
-                        @keyframes spin {
-                            to { transform: rotate(360deg); }
-                        }
-                    `}</style>
+            <div className={styles.container}>
+                <div className={styles.successCard}>
+                    <div className={styles.successIcon}>✅</div>
+                    <div className={styles.successContent}>
+                        <h2 className={styles.successTitle}>Dispatch Created Successfully!</h2>
+                        <p className={styles.successMessage}>
+                            Order <strong>{form.orderRef}</strong> has been created for
+                            <strong> {form.customerName}</strong>
+                        </p>
+                        <div className={styles.successSpinner} />
+                    </div>
                 </div>
             </div>
         );
     }
 
-    /* ------------------ FORM ------------------ */
+    /* ------------------ MAIN FORM ------------------ */
     return (
-        <div className={styles.page}>
-            <h2 className={styles.title}>Dispatch Entry</h2>
+        <div className={styles.container}>
+            {/* ERROR TOAST */}
+            {error && (
+                <div className={styles.errorToast}>
+                    <span>⚠️ {error}</span>
+                    <button onClick={() => setError("")} className={styles.closeBtn}>×</button>
+                </div>
+            )}
 
-            <div className={styles.grid}>
-                <select onChange={e => update("orderType", e.target.value)}>
-                    <option>Offline</option>
-                    <option>Website</option>
-                </select>
+            <header className={styles.header}>
+                <h1 className={styles.title}>New Dispatch Entry</h1>
+                <p className={styles.subtitle}>Every barcode tells a story of progress — keep moving forward</p>
+            </header>
 
-                <select onChange={e => update("warehouse", e.target.value)}>
-                    <option value="">Select Warehouse</option>
-                    {warehouses.map(w => <option key={w}>{w}</option>)}
-                </select>
-
-                <input placeholder="Order Reference" onChange={e => update("orderRef", e.target.value)} />
-                <input placeholder="Customer Name" onChange={e => update("customerName", e.target.value)} />
-                <input placeholder="AWB Number" onChange={e => update("awb", e.target.value)} />
-
-                <select onChange={e => update("logistics", e.target.value)}>
-                    <option value="">Select Logistics</option>
-                    {logistics.map(l => <option key={l}>{l}</option>)}
-                </select>
-
-                <select onChange={e => update("paymentMode", e.target.value)}>
-                    <option>Payment Mode</option>
-                    <option>COD</option>
-                    <option>Prepaid</option>
-                </select>
-
-                <select onChange={e => update("processedBy", e.target.value)}>
-                    <option value="">Processed By</option>
-                    {executives.map(p => <option key={p}>{p}</option>)}
-                </select>
-
-                <input placeholder="Invoice Amount" onChange={e => update("invoiceAmount", e.target.value)} />
-            </div>
-
-            <div className={styles.dimGrid}>
-                <input placeholder="Weight (kg)" onChange={e => update("weight", e.target.value)} />
-                <input placeholder="Length (cm)" onChange={e => update("length", e.target.value)} />
-                <input placeholder="Width (cm)" onChange={e => update("width", e.target.value)} />
-                <input placeholder="Height (cm)" onChange={e => update("height", e.target.value)} />
-            </div>
-
-            <textarea
-                className={styles.remarks}
-                placeholder="Remarks"
-                onChange={e => update("remarks", e.target.value)}
-            />
-
-            <h3 className={styles.section}>Products</h3>
-
-            {products.map((p, i) => (
-                <div key={i} className={styles.productRow}>
-                    <div className={styles.searchBox}>
-                        <input
-                            placeholder="Product name / barcode"
-                            value={p.name}
-                            onChange={e => searchProduct(i, e.target.value)}
-                        />
-                        {p.suggestions.length > 0 && (
-                            <div className={styles.suggestions}>
-                                {p.suggestions.map(s => (
-                                    <div
-                                        key={s.barcode}
-                                        onClick={() =>
-                                            selectProduct(i, `${s.product_name} | ${s.product_variant} | ${s.barcode}`)
-                                        }
-                                    >
-                                        {s.product_name} ({s.barcode})
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+            <form className={styles.form} onSubmit={(e) => { e.preventDefault(); submitDispatch(); }}>
+                <div className={styles.formContainer}>
+                {/* MAIN FIELDS */}
+                <div className={styles.formSection}>
+                    <h3 className={styles.sectionTitle}>Order Information</h3>
+                    <div className={styles.formGrid}>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Order Type</label>
+                        <select value={form.orderType} onChange={e => update("orderType", e.target.value)} className={styles.select}>
+                            <option>Offline</option>
+                            <option>Website</option>
+                        </select>
                     </div>
 
-                    <input
-                        type="number"
-                        placeholder="Qty"
-                        value={p.qty}
-                        onChange={e => {
-                            const u = [...products];
-                            u[i].qty = e.target.value;
-                            setProducts(u);
-                        }}
-                    />
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Warehouse *</label>
+                        <select value={form.warehouse} onChange={e => update("warehouse", e.target.value)} className={styles.select} required>
+                            <option value="">Select Warehouse</option>
+                            {warehouses.map(w => <option key={w} value={w}>{w}</option>)}
+                        </select>
+                    </div>
 
-                    <button onClick={() => removeProduct(i)}>✕</button>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Order Reference *</label>
+                        <input
+                            className={styles.input}
+                            placeholder="ORD-2025-001"
+                            value={form.orderRef}
+                            onChange={e => update("orderRef", e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Customer Name *</label>
+                        <input
+                            className={styles.input}
+                            placeholder="John Doe"
+                            value={form.customerName}
+                            onChange={e => update("customerName", e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>AWB Number</label>
+                        <input
+                            className={styles.input}
+                            placeholder="AWB123456789"
+                            value={form.awb}
+                            onChange={e => update("awb", e.target.value)}
+                        />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Logistics</label>
+                        <select value={form.logistics} onChange={e => update("logistics", e.target.value)} className={styles.select}>
+                            <option value="">Select Logistics</option>
+                            {logistics.map(l => <option key={l} value={l}>{l}</option>)}
+                        </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Payment Mode</label>
+                        <select value={form.paymentMode} onChange={e => update("paymentMode", e.target.value)} className={styles.select}>
+                            <option value="">Select Payment</option>
+                            <option>COD</option>
+                            <option>Prepaid</option>
+                        </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Processed By</label>
+                        <select value={form.processedBy} onChange={e => update("processedBy", e.target.value)} className={styles.select}>
+                            <option value="">Select Executive</option>
+                            {executives.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Invoice Amount (₹)</label>
+                        <input
+                            type="number"
+                            className={styles.input}
+                            placeholder="2500"
+                            value={form.invoiceAmount}
+                            onChange={e => update("invoiceAmount", e.target.value)}
+                        />
+                    </div>
+                    </div>
                 </div>
-            ))}
 
-            <button className={styles.addBtn} onClick={addProduct}>+ Add Product</button>
+                {/* DIMENSIONS */}
+                <div className={styles.formSection}>
+                    <h3 className={styles.sectionTitle}>Dimensions</h3>
+                    <div className={styles.dimGrid}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Weight (kg)</label>
+                            <input className={styles.input} placeholder="25.5" value={form.weight} onChange={e => update("weight", e.target.value)} />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Length (cm)</label>
+                            <input className={styles.input} placeholder="120" value={form.length} onChange={e => update("length", e.target.value)} />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Width (cm)</label>
+                            <input className={styles.input} placeholder="60" value={form.width} onChange={e => update("width", e.target.value)} />
+                        </div>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Height (cm)</label>
+                            <input className={styles.input} placeholder="80" value={form.height} onChange={e => update("height", e.target.value)} />
+                        </div>
+                    </div>
+                </div>
 
-            <button
-                className={styles.submit}
-                onClick={submitDispatch}
-                disabled={loading}
-            >
-                {loading ? "Submitting..." : "Submit Dispatch"}
-            </button>
+                {/* REMARKS */}
+                <div className={styles.formSection}>
+                    <h3 className={styles.sectionTitle}>Additional Notes</h3>
+                    <div className={styles.formGroup}>
+                        <label className={styles.label}>Remarks</label>
+                        <textarea
+                            className={styles.textarea}
+                            placeholder="Add any additional notes or special instructions..."
+                            value={form.remarks}
+                            onChange={e => update("remarks", e.target.value)}
+                            rows="4"
+                        />
+                    </div>
+                </div>
+
+                {/* PRODUCTS */}
+                <div className={styles.formSection}>
+                    <h3 className={styles.sectionTitle}>Products <span className={styles.productCount}>({products.length})</span></h3>
+
+                    {products.map((p, i) => (
+                        <div key={i} className={styles.productRow}>
+                            <div className={styles.searchBox}>
+                                <input
+                                    className={styles.input}
+                                    placeholder="Product name / barcode"
+                                    value={p.name}
+                                    onChange={e => searchProduct(i, e.target.value)}
+                                />
+                                {p.suggestions.length > 0 && (
+                                    <div className={styles.suggestions}>
+                                        {p.suggestions.map(s => (
+                                            <div
+                                                key={s.barcode}
+                                                className={styles.suggestionItem}
+                                                onClick={() =>
+                                                    selectProduct(i, `${s.product_name} | ${s.product_variant} | ${s.barcode}`)
+                                                }
+                                            >
+                                                {s.product_name} ({s.product_variant})
+                                                <span className={styles.barcode}>{s.barcode}</span>
+                                                {stockData[s.barcode] !== undefined && (
+                                                    <span className={styles.stockBadge}>
+                                                        📦 {stockData[s.barcode] || 'N/A'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={styles.qtyGroup}>
+                                <input
+                                    type="number"
+                                    className={styles.qtyInput}
+                                    placeholder="Qty"
+                                    value={p.qty}
+                                    min="1"
+                                    onChange={e => {
+                                        const u = [...products];
+                                        u[i].qty = parseInt(e.target.value) || 1;
+                                        setProducts(u);
+                                    }}
+                                />
+                            </div>
+
+                            <button
+                                type="button"
+                                className={styles.removeBtn}
+                                onClick={() => removeProduct(i)}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    ))}
+
+                    <button
+                        type="button"
+                        className={styles.addProductBtn}
+                        onClick={addProduct}
+                    >
+                        ➕ Add Product
+                    </button>
+                </div>
+
+                {/* SUBMIT */}
+                <div className={styles.submitSection}>
+                    <button
+                        className={`${styles.submitBtn} ${loading ? styles.loading : ''}`}
+                        type="submit"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <>
+                                <div className={styles.spinner} />
+                                Creating Dispatch...
+                            </>
+                        ) : (
+                            `Submit Dispatch (${products.length} products)`
+                        )}
+                    </button>
+                </div>
+            </div>
+            </form>
         </div>
     );
 }

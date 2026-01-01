@@ -1,0 +1,1038 @@
+/* ================= CONTAINER & LAYOUT ================= */
+.container {
+    min-height: 100vh;
+    display: flex;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* ================= ANIMATED BACKGROUND ================= */
+.backgroundShapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.shape1, .shape2, .shape3 {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+    animation: float 6s ease-in-out infinite;
+}
+
+.shape1 {
+    width: 200px;
+    height: 200px;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.shape2 {
+    width: 150px;
+    height: 150px;
+    top: 60%;
+    right: 15%;
+    animation-delay: 2s;
+}
+
+.shape3 {
+    width: 100px;
+    height: 100px;
+    bottom: 20%;
+    left: 20%;
+    animation-delay: 4s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+/* ================= CHARACTER SECTION ================= */
+.characterSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    z-index: 2;
+}
+
+.characterContainer {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+/* ================= INTERACTIVE CHARACTER ================= */
+.character {
+    position: relative;
+    z-index: 3;
+    transition: transform 0.3s ease;
+}
+
+.character:hover {
+    transform: scale(1.05);
+}
+
+.characterHead {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border-radius: 50%;
+    position: relative;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+    animation: headBob 3s ease-in-out infinite;
+    transition: box-shadow 0.3s ease;
+}
+
+.characterHead:hover {
+    box-shadow: 0 12px 40px rgba(251, 191, 36, 0.4);
+}
+
+/* ================= ENHANCED EYES WITH EMOTIONS ================= */
+.characterEyes {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    transition: transform 0.2s ease;
+}
+
+.eye {
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    position: relative;
+    border: 2px solid #1f2937;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.pupil {
+    width: 8px;
+    height: 8px;
+    background: #1f2937;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.2s ease;
+}
+
+.eyeShine {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+/* ================= EYEBROWS FOR EXPRESSIONS ================= */
+.eyebrows {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+.leftEyebrow, .rightEyebrow {
+    width: 12px;
+    height: 3px;
+    background: #92400e;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* ================= EMOTIONAL STATES ================= */
+@keyframes headBob {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+/* Happy State */
+.eyes_happy .eye {
+    transform: scale(1);
+}
+
+.eyebrows_happy {
+    transform: translateX(-50%) translateY(0px);
+}
+
+.mouth_happy {
+    width: 20px;
+    height: 10px;
+    border: 3px solid #1f2937;
+    border-top: none;
+    border-radius: 0 0 20px 20px;
+    background: transparent;
+}
+
+/* Typing State */
+.eyes_typing .eye {
+    transform: scaleY(0.7);
+}
+
+.eyebrows_typing {
+    transform: translateX(-50%) translateY(-2px);
+}
+
+.eyebrows_typing .leftEyebrow {
+    transform: rotate(-10deg);
+}
+
+.eyebrows_typing .rightEyebrow {
+    transform: rotate(10deg);
+}
+
+.mouth_typing {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1f2937;
+    animation: typingMouth 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes typingMouth {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); }
+}
+
+/* Error State */
+.eyes_error .eye {
+    transform: scaleX(0.3) scaleY(1.2);
+    background: #fecaca;
+}
+
+.eyebrows_error {
+    transform: translateX(-50%) translateY(-5px);
+}
+
+.eyebrows_error .leftEyebrow {
+    transform: rotate(-25deg);
+    background: #dc2626;
+}
+
+.eyebrows_error .rightEyebrow {
+    transform: rotate(25deg);
+    background: #dc2626;
+}
+
+.mouth_error {
+    width: 16px;
+    height: 16px;
+    border: 3px solid #dc2626;
+    border-radius: 50%;
+    background: #fecaca;
+    animation: errorShake 0.5s ease-in-out infinite;
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+/* Success State */
+.eyes_success .eye {
+    transform: scaleY(0.3);
+    background: #dcfce7;
+}
+
+.eyebrows_success {
+    transform: translateX(-50%) translateY(2px);
+}
+
+.eyebrows_success .leftEyebrow,
+.eyebrows_success .rightEyebrow {
+    background: #16a34a;
+    transform: rotate(0deg);
+}
+
+.mouth_success {
+    width: 25px;
+    height: 15px;
+    border: 3px solid #16a34a;
+    border-top: none;
+    border-radius: 0 0 25px 25px;
+    background: #dcfce7;
+    animation: successPulse 1s ease-in-out infinite;
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Sleepy State (for password field) */
+.eyes_sleepy .eye {
+    height: 4px;
+    border-radius: 10px;
+    background: #e5e7eb;
+}
+
+.eyebrows_sleepy {
+    transform: translateX(-50%) translateY(5px);
+}
+
+.mouth_sleepy {
+    width: 12px;
+    height: 6px;
+    border-radius: 6px;
+    background: #6b7280;
+}
+
+/* Loading State */
+.eyes_loading .eye {
+    animation: loadingBlink 1s ease-in-out infinite;
+}
+
+.mouth_loading {
+    width: 15px;
+    height: 8px;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    background: transparent;
+    animation: loadingMouth 1s ease-in-out infinite;
+}
+
+@keyframes loadingBlink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.1); }
+}
+
+@keyframes loadingMouth {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* ================= BLUSH FOR EMOTIONS ================= */
+.blush {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 40px;
+    pointer-events: none;
+}
+
+.leftBlush, .rightBlush {
+    width: 12px;
+    height: 8px;
+    background: rgba(239, 68, 68, 0.3);
+    border-radius: 50%;
+    animation: blushPulse 1s ease-in-out infinite;
+}
+
+@keyframes blushPulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+/* ================= ENHANCED LAPTOP WITH TYPING INDICATOR ================= */
+.laptopScreen::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 4px;
+}
+
+.typingIndicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    animation: typingDots 1s ease-in-out infinite;
+    z-index: 2;
+}
+
+@keyframes typingDots {
+    0%, 20% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ================= EMOTION PARTICLES ================= */
+.successParticles, .errorParticles {
+    position: absolute;
+    top: -50px;
+    left: -50px;
+    width: 200px;
+    height: 200px;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    font-size: 20px;
+    animation: particleFloat 2s ease-out forwards;
+}
+
+.successParticles .particle:nth-child(1) {
+    top: 50px;
+    left: 30px;
+    animation-delay: 0s;
+}
+
+.successParticles .particle:nth-child(2) {
+    top: 30px;
+    right: 40px;
+    animation-delay: 0.3s;
+}
+
+.successParticles .particle:nth-child(3) {
+    bottom: 60px;
+    left: 60px;
+    animation-delay: 0.6s;
+}
+
+.errorParticles .particle:nth-child(1) {
+    top: 40px;
+    left: 50px;
+    animation-delay: 0s;
+}
+
+.errorParticles .particle:nth-child(2) {
+    top: 60px;
+    right: 30px;
+    animation-delay: 0.5s;
+}
+
+@keyframes particleFloat {
+    0% {
+        opacity: 0;
+        transform: translateY(0px) scale(0.5);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-30px) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-60px) scale(0.5);
+    }
+}
+
+/* ================= ENHANCED CREDENTIALS SECTION ================= */
+.footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.credentialsBtn {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 12px;
+}
+
+.credentialsBtn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #475569;
+}
+
+.credentialsPanel {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 12px;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.credentialsText {
+    font-size: 13px;
+    color: #475569;
+    margin: 0 0 12px 0;
+    font-family: 'Monaco', 'Courier New', monospace;
+    line-height: 1.5;
+}
+
+.fillBtn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fillBtn:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
+}
+
+.characterBody {
+    width: 80px;
+    height: 100px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 40px 40px 20px 20px;
+    margin: 0 auto;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+}
+
+.characterArm {
+    position: absolute;
+    width: 15px;
+    height: 60px;
+    background: #fbbf24;
+    border-radius: 10px;
+    top: 10px;
+    transition: transform 0.2s ease;
+}
+
+.leftArm {
+    left: -10px;
+    transform-origin: top center;
+}
+
+.rightArm {
+    right: -10px;
+    transform-origin: top center;
+}
+
+/* ================= ACTIVITY ELEMENTS ================= */
+.activityElements {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.laptop {
+    position: absolute;
+    bottom: -80px;
+    left: -60px;
+    width: 120px;
+    height: 80px;
+}
+
+.laptopScreen {
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(135deg, #1f2937, #374151);
+    border-radius: 8px 8px 0 0;
+    border: 3px solid #6b7280;
+    position: relative;
+}
+
+.laptopScreen::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 4px;
+}
+
+.laptopKeyboard {
+    width: 100%;
+    height: 20px;
+    background: #9ca3af;
+    border-radius: 0 0 8px 8px;
+}
+
+.floatingIcons {
+    position: absolute;
+    top: -100px;
+    left: -150px;
+    width: 300px;
+    height: 200px;
+}
+
+.icon {
+    position: absolute;
+    font-size: 24px;
+    animation: iconFloat 4s ease-in-out infinite;
+}
+
+.icon:nth-child(1) {
+    top: 20px;
+    left: 50px;
+    animation-delay: 0s;
+}
+
+.icon:nth-child(2) {
+    top: 80px;
+    right: 30px;
+    animation-delay: 1.5s;
+}
+
+.icon:nth-child(3) {
+    bottom: 40px;
+    left: 80px;
+    animation-delay: 3s;
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0px) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-15px) scale(1.1); opacity: 1; }
+}
+
+/* ================= WELCOME TEXT ================= */
+.welcomeText {
+    text-align: center;
+    color: #1e293b;
+}
+
+.welcomeText h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0 0 12px 0;
+    background: linear-gradient(135deg, #1e293b, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.welcomeText p {
+    font-size: 1.125rem;
+    color: #64748b;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* ================= LOGIN SECTION ================= */
+.loginSection {
+    flex: 0 0 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-left: 1px solid rgba(226, 232, 240, 0.5);
+    position: relative;
+    z-index: 2;
+}
+
+.loginCard {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f1f5f9;
+    animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ================= HEADER ================= */
+.header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.logoIcon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+}
+
+.logoText {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.02em;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 0.9375rem;
+    color: #64748b;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* ================= FORM ================= */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.labelRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: 0.01em;
+}
+
+.forgotLink {
+    font-size: 13px;
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.forgotLink:hover {
+    color: #2563eb;
+}
+
+.input {
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.input::placeholder {
+    color: #94a3b8;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 
+        0 0 0 4px rgba(59, 130, 246, 0.1),
+        0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+/* ================= ERROR MESSAGE ================= */
+.errorMessage {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    color: #dc2626;
+    font-size: 14px;
+    font-weight: 500;
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* ================= SUBMIT BUTTON ================= */
+.submitBtn {
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(30, 41, 59, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+}
+
+.submitBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.submitBtn:hover:not(.loading)::before {
+    left: 100%;
+}
+
+.submitBtn:hover:not(.loading) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(30, 41, 59, 0.4);
+    background: linear-gradient(135deg, #334155, #475569);
+}
+
+.submitBtn:active:not(.loading) {
+    transform: translateY(0);
+}
+
+.submitBtn.loading {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ================= FOOTER ================= */
+.footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.footerText {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+}
+
+.credentials {
+    font-weight: 600;
+    color: #3b82f6;
+    font-family: 'Monaco', 'Courier New', monospace;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .characterSection {
+        flex: 0 0 auto;
+        padding: 20px;
+    }
+    
+    .loginSection {
+        flex: 1;
+        border-left: none;
+        border-top: 1px solid rgba(226, 232, 240, 0.5);
+    }
+    
+    .welcomeText h2 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .characterSection {
+        padding: 20px 20px 10px;
+    }
+    
+    .character {
+        transform: scale(0.8);
+    }
+    
+    .welcomeText h2 {
+        font-size: 1.75rem;
+    }
+    
+    .loginCard {
+        padding: 32px 24px;
+    }
+    
+    .title {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .loginSection {
+        padding: 20px;
+    }
+    
+    .loginCard {
+        padding: 24px 20px;
+    }
+}
+
+
+/* ================= USER SELECTION ================= */
+.credentialsTitle {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.usersList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.userCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.userCard:hover {
+    background: #f1f5f9;
+    border-color: #3b82f6;
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.userInfo strong {
+    font-size: 13px;
+    color: #1e293b;
+}
+
+.userRole {
+    font-size: 11px;
+    color: #3b82f6;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.userEmail {
+    font-size: 11px;
+    color: #64748b;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.selectUserBtn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.selectUserBtn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.credentialsNote {
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+}

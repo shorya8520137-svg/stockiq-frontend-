@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import styles from "./inventoryEntry.module.css";
 import InventoryTerminalOverlay from "./InventoryTerminalOverlay";
 
@@ -89,8 +90,25 @@ export default function InventoryEntry({ onClose }) {
 
     return (
         <>
-            <div className={styles.overlay}>
-                <div className={styles.panel}>
+            <AnimatePresence>
+                <motion.div 
+                    className={styles.overlay}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) onClose();
+                    }}
+                >
+                    <motion.div 
+                        className={styles.panel}
+                        initial={{ scale: 0.92, y: 10, opacity: 0 }}
+                        animate={{ scale: 1, y: 0, opacity: 1 }}
+                        exit={{ scale: 0.92, y: 10, opacity: 0 }}
+                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                     <button className={styles.close} onClick={onClose}>✕</button>
 
                     <div className={styles.header}>Inventory Entry</div>
@@ -168,8 +186,9 @@ export default function InventoryEntry({ onClose }) {
                     </div>
 
                     {msg && <div className={styles.msg}>{msg}</div>}
-                </div>
-            </div>
+                    </motion.div>
+                </motion.div>
+            </AnimatePresence>
 
             <InventoryTerminalOverlay
                 open={showTerminal}

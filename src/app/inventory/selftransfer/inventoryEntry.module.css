@@ -1,22 +1,47 @@
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(2, 6, 23, 0.7);
-    backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 999;
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .panel {
     width: 520px;
-    background: linear-gradient(180deg, #0b1220, #050914);
-    border-radius: 18px;
-    padding: 26px;
-    color: #e5e7eb;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: hsl(var(--card));
+    border-radius: 20px;
+    padding: 28px;
+    color: hsl(var(--card-foreground));
     position: relative;
-    box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+    border: 1px solid hsl(var(--border));
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.8),
+        0 0 0 1px hsl(var(--border));
+    animation: modalEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalEnter {
+    from { 
+        transform: scale(0.92) translateY(10px); 
+        opacity: 0; 
+    }
+    to { 
+        transform: scale(1) translateY(0); 
+        opacity: 1; 
+    }
 }
 
 .close {
@@ -25,21 +50,37 @@
     top: 16px;
     background: none;
     border: none;
-    color: #9ca3af;
+    color: hsl(var(--muted-foreground));
     font-size: 20px;
     cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.close:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    transform: rotate(90deg);
 }
 
 .header {
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 6px;
+    color: hsl(var(--card-foreground));
+    transition: color 0.3s ease;
 }
 
 .subHeader {
     font-size: 13px;
-    color: #94a3b8;
+    color: hsl(var(--muted-foreground));
     margin-bottom: 18px;
+    transition: color 0.3s ease;
 }
 
 .field {
@@ -48,23 +89,34 @@
 
 .label {
     font-size: 13px;
-    color: #c7d2fe;
+    color: hsl(var(--foreground));
     margin-bottom: 6px;
     display: block;
+    font-weight: 600;
+    transition: color 0.3s ease;
 }
 
 .input {
     width: 100%;
     padding: 11px 12px;
-    background: #020617;
-    border: 1px solid #1e293b;
+    background: hsl(var(--input));
+    border: 1.5px solid hsl(var(--border));
     border-radius: 12px;
-    color: #e5e7eb;
+    color: hsl(var(--foreground));
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.input::placeholder {
+    color: hsl(var(--muted-foreground));
 }
 
 .input:focus {
     outline: none;
-    border-color: #6366f1;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+    background: hsl(var(--input));
 }
 
 .templateRow {
@@ -74,28 +126,45 @@
 .linkBtn {
     background: none;
     border: none;
-    color: #a5b4fc;
+    color: hsl(var(--primary));
     cursor: pointer;
     font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.linkBtn:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
 }
 
 .fileBox {
-    background: #020617;
-    border: 1px dashed #1e293b;
+    background: hsl(var(--input));
+    border: 1.5px dashed hsl(var(--border));
     border-radius: 12px;
     padding: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.3s ease;
+}
+
+.fileBox:hover {
+    border-color: hsl(var(--ring));
+    background: hsl(var(--accent));
 }
 
 .fileBox input {
-    color: #c7d2fe;
+    color: hsl(var(--foreground));
+    cursor: pointer;
 }
 
 .fileName {
     font-size: 12px;
-    color: #94a3b8;
+    color: hsl(var(--muted-foreground));
+    font-weight: 500;
 }
 
 .suggestWrap {
@@ -106,29 +175,57 @@
     position: absolute;
     top: calc(100% + 6px);
     width: 100%;
-    background: #020617;
-    border: 1px solid #1e293b;
+    background: hsl(var(--popover));
+    border: 1.5px solid hsl(var(--border));
     border-radius: 12px;
     z-index: 20;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .suggestItem {
     padding: 10px 12px;
     cursor: pointer;
+    border-bottom: 1px solid hsl(var(--border));
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.suggestItem:last-child {
+    border-bottom: none;
 }
 
 .suggestItem:hover {
-    background: #111827;
+    background: hsl(var(--accent));
+    padding-left: 16px;
 }
 
 .primary {
     display: block;
     font-size: 14px;
+    color: hsl(var(--popover-foreground));
+    font-weight: 500;
 }
 
 .secondary {
     font-size: 12px;
-    color: #94a3b8;
+    color: hsl(var(--muted-foreground));
+    font-family: 'Monaco', 'Courier New', monospace;
 }
 
 .footer {
@@ -141,11 +238,18 @@
     width: 260px;
     padding: 12px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: #fff;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
     border: none;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.3);
+}
+
+.submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .submit:disabled {
@@ -156,6 +260,15 @@
 .msg {
     margin-top: 12px;
     text-align: center;
-    color: #a5b4fc;
+    padding: 10px;
+    border-radius: 8px;
     font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.msg:has-text("✔") {
+    background: rgba(16, 185, 129, 0.1);
+    color: rgb(var(--success));
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }

@@ -1,8 +1,10 @@
 .wrapper {
-    background: #050b1a;
+    background: #ffffff;
     padding: 20px;
     border-radius: 14px;
-    color: #fff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .tableWrap {
@@ -15,19 +17,20 @@
 }
 
 .table thead {
-    background: #0b1224;
+    background: #f8fafc;
 }
 
 .table th {
     padding: 14px;
     font-size: 13px;
     text-align: left;
-    color: #9ca3af;
+    color: #64748b;
+    font-weight: 600;
 }
 
 .table td {
     padding: 14px;
-    border-bottom: 1px solid #1c2540;
+    border-bottom: 1px solid #f1f5f9;
     font-size: 14px;
 }
 
@@ -52,7 +55,7 @@
 }
 
 .date {
-    color: #cbd5f5;
+    color: #64748b;
 }
 
 .dateHead {
@@ -68,7 +71,7 @@
 .actionBtn {
     background: transparent;
     border: none;
-    color: #fff;
+    color: #475569;
     cursor: pointer;
     font-size: 18px;
 }
@@ -77,19 +80,20 @@
     position: absolute;
     right: 0;
     top: 28px;
-    background: #0b1224;
-    border: 1px solid #1c2540;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 10px;
     padding: 6px;
     display: flex;
     gap: 6px;
     z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .actionMenu button {
-    background: #111827;
+    background: #f8fafc;
     border: none;
-    color: #fff;
+    color: #475569;
     padding: 6px 10px;
     border-radius: 8px;
     cursor: pointer;
@@ -97,7 +101,8 @@
 }
 
 .actionMenu button:hover {
-    background: #1e40af;
+    background: #3b82f6;
+    color: white;
 }
 .topBar {
     display: flex;
@@ -120,11 +125,12 @@
 .modalOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(15, 23, 42, 0.1);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 50;
+    backdrop-filter: blur(4px);
 }
 
 .modalContent {

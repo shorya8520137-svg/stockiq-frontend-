@@ -1,7 +1,7 @@
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(2, 6, 23, 0.7);
+    background: rgba(15, 23, 42, 0.1);
     backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
@@ -13,12 +13,13 @@
     width: 720px;
     max-height: 90vh;
     overflow-y: auto;
-    background: linear-gradient(180deg, #0b1220, #050914);
+    background: #ffffff;
     border-radius: 18px;
     padding: 26px;
-    color: #e5e7eb;
+    color: #0f172a;
     position: relative;
-    box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e2e8f0;
 }
 
 .close {
@@ -27,7 +28,7 @@
     right: 18px;
     background: none;
     border: none;
-    color: #9ca3af;
+    color: #64748b;
     font-size: 20px;
     cursor: pointer;
 }
@@ -49,7 +50,7 @@
 
 .label {
     font-size: 13px;
-    color: #c7d2fe;
+    color: #475569;
     margin-bottom: 6px;
     display: block;
 }
@@ -58,16 +59,17 @@
 .select {
     width: 100%;
     padding: 11px 12px;
-    background: #020617;
-    border: 1px solid #1e293b;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
-    color: #e5e7eb;
+    color: #0f172a;
 }
 
 .input:focus,
 .select:focus {
     outline: none;
-    border-color: #6366f1;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .row {
@@ -84,10 +86,11 @@
     position: absolute;
     top: calc(100% + 6px);
     width: 100%;
-    background: #020617;
-    border: 1px solid #1e293b;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     z-index: 20;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .suggestItem {
@@ -96,7 +99,7 @@
 }
 
 .suggestItem:hover {
-    background: #111827;
+    background: #f8fafc;
 }
 
 .primary {
@@ -106,7 +109,7 @@
 
 .secondary {
     font-size: 12px;
-    color: #94a3b8;
+    color: #64748b;
 }
 
 .itemRow {
@@ -119,7 +122,7 @@
 .addRow {
     background: none;
     border: none;
-    color: #a5b4fc;
+    color: #3b82f6;
     margin: 8px 0;
     cursor: pointer;
 }
@@ -134,7 +137,7 @@
     width: 280px;
     padding: 12px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     color: white;
     font-weight: 600;
     border: none;
@@ -149,7 +152,7 @@
 .msg {
     text-align: center;
     margin-top: 12px;
-    color: #a5b4fc;
+    color: #64748b;
 }
 /* Enable smooth scrolling */
 .panel {
@@ -169,25 +172,25 @@
 .panel::-webkit-scrollbar-thumb {
     background: linear-gradient(
             180deg,
-            rgba(99, 102, 241, 0.45),
-            rgba(139, 92, 246, 0.45)
+            rgba(59, 130, 246, 0.45),
+            rgba(29, 78, 216, 0.45)
     );
     border-radius: 10px;
-    border: 2px solid rgba(2, 6, 23, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .panel::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(
             180deg,
-            rgba(99, 102, 241, 0.75),
-            rgba(139, 92, 246, 0.75)
+            rgba(59, 130, 246, 0.75),
+            rgba(29, 78, 216, 0.75)
     );
 }
 
 /* Firefox */
 .panel {
     scrollbar-width: thin;
-    scrollbar-color: rgba(139, 92, 246, 0.6) transparent;
+    scrollbar-color: rgba(59, 130, 246, 0.6) transparent;
 }
 .excelRow {
     display: flex;
@@ -197,9 +200,9 @@
 
 .excelRow button,
 .upload {
-    background: #020617;
-    border: 1px solid #1e293b;
-    color: #c7d2fe;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
     padding: 10px 14px;
     border-radius: 10px;
     cursor: pointer;
@@ -208,5 +211,6 @@
 
 .upload:hover,
 .excelRow button:hover {
-    border-color: #6366f1;
+    border-color: #3b82f6;
+    background: #f8fafc;
 }
