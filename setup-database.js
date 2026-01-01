@@ -39,8 +39,33 @@ async function setupDatabase() {
             stmt.toUpperCase().includes('CREATE TABLE')
         );
         
-        const insertStatements = allStatements.filter(stmt => 
-            stmt.toUpperCase().includes('INSERT')
+        // Group INSERT statements by dependency order
+        const roleInserts = allStatements.filter(stmt => 
+            stmt.toUpperCase().includes('INSERT') && 
+            stmt.toUpperCase().includes('INTO ROLES')
+        );
+        
+        const permissionInserts = allStatements.filter(stmt => 
+            stmt.toUpperCase().includes('INSERT') && 
+            stmt.toUpperCase().includes('INTO PERMISSIONS')
+        );
+        
+        const userInserts = allStatements.filter(stmt => 
+            stmt.toUpperCase().includes('INSERT') && 
+            stmt.toUpperCase().includes('INTO USERS')
+        );
+        
+        const rolePermissionInserts = allStatements.filter(stmt => 
+            stmt.toUpperCase().includes('INSERT') && 
+            stmt.toUpperCase().includes('INTO ROLE_PERMISSIONS')
+        );
+        
+        const otherInserts = allStatements.filter(stmt => 
+            stmt.toUpperCase().includes('INSERT') && 
+            !stmt.toUpperCase().includes('INTO ROLES') &&
+            !stmt.toUpperCase().includes('INTO PERMISSIONS') &&
+            !stmt.toUpperCase().includes('INTO USERS') &&
+            !stmt.toUpperCase().includes('INTO ROLE_PERMISSIONS')
         );
 
         // Execute CREATE TABLE statements first
@@ -57,9 +82,60 @@ async function setupDatabase() {
             }
         }
 
-        // Execute INSERT statements after all tables are created
+        // Execute INSERT statements in dependency order
         console.log('📋 Inserting data...');
-        for (const statement of insertStatements) {
+        
+        // 1. Insert roles first
+        for (const statement of roleInserts) {
+            try {
+                await connection.execute(statement);
+                console.log(`   ✓ Inserted roles data`);
+            } catch (error) {
+                if (!error.message.includes('Duplicate entry')) {
+                    console.error(`   ❌ Error inserting roles: ${error.message}`);
+                }
+            }
+        }
+        
+        // 2. Insert permissions
+        for (const statement of permissionInserts) {
+            try {
+                await connection.execute(statement);
+                console.log(`   ✓ Inserted permissions data`);
+            } catch (error) {
+                if (!error.message.includes('Duplicate entry')) {
+                    console.error(`   ❌ Error inserting permissions: ${error.message}`);
+                }
+            }
+        }
+        
+        // 3. Insert users (depends on roles)
+        for (const statement of userInserts) {
+            try {
+                await connection.execute(statement);
+                console.log(`   ✓ Inserted user data`);
+            } catch (error) {
+                if (!error.message.includes('Duplicate entry')) {
+                    console.error(`   ❌ Error inserting users: ${error.message}`);
+                    console.error(`   Statement: ${statement.substring(0, 100)}...`);
+                }
+            }
+        }
+        
+        // 4. Insert role permissions (depends on roles and permissions)
+        for (const statement of rolePermissionInserts) {
+            try {
+                await connection.execute(statement);
+                console.log(`   ✓ Inserted role permissions data`);
+            } catch (error) {
+                if (!error.message.includes('Duplicate entry')) {
+                    console.error(`   ❌ Error inserting role permissions: ${error.message}`);
+                }
+            }
+        }
+        
+        // 5. Insert other data
+        for (const statement of otherInserts) {
             try {
                 await connection.execute(statement);
                 const match = statement.match(/INSERT.*?INTO\s+(\w+)/i);
