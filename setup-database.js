@@ -24,15 +24,19 @@ async function setupDatabase() {
         console.log('📋 Executing database setup script...');
 
         // Split SQL into individual statements and filter
+        // Handle multi-line statements properly by splitting on semicolon + newline
         const allStatements = sql
-            .split(';')
+            .replace(/\r\n/g, '\n') // Normalize line endings
+            .split(/;\s*\n/)
             .map(stmt => stmt.trim())
             .filter(stmt => 
                 stmt.length > 10 && 
                 !stmt.startsWith('--') && 
                 !stmt.startsWith('/*') &&
-                stmt !== 'USE inventory'
-            );
+                stmt !== 'USE inventory' &&
+                !stmt.match(/^-+\s*$/) // Remove lines with just dashes
+            )
+            .map(stmt => stmt.endsWith(';') ? stmt : stmt + ';'); // Ensure semicolon at end
 
         // Separate CREATE TABLE statements from INSERT statements
         const createStatements = allStatements.filter(stmt => 
@@ -110,14 +114,16 @@ async function setupDatabase() {
         }
         
         // 3. Insert users (depends on roles)
+        console.log(`📋 Processing ${userInserts.length} user INSERT statements...`);
         for (const statement of userInserts) {
             try {
+                console.log(`   🔄 Executing user insert: ${statement.substring(0, 50)}...`);
                 await connection.execute(statement);
-                console.log(`   ✓ Inserted user data`);
+                console.log(`   ✅ Inserted user data`);
             } catch (error) {
                 if (!error.message.includes('Duplicate entry')) {
                     console.error(`   ❌ Error inserting users: ${error.message}`);
-                    console.error(`   Statement: ${statement.substring(0, 100)}...`);
+                    console.error(`   📝 Full statement: ${statement}`);
                 }
             }
         }
