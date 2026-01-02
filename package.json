@@ -1,44 +1,29 @@
 {
-  "name": "inventory-management-backend",
-  "version": "1.0.0",
-  "description": "Complete backend for inventory management system with permissions, orders, dispatch, and messaging",
-  "main": "server.js",
+  "name": "stockiq-frontend",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "setup-db": "mysql -h inventory-db.cv2iey8a8hbk.ap-south-1.rds.amazonaws.com -u admin -pgfx998sd hunyhuny_auto_dispatch < database-setup.sql",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "keywords": [
-    "inventory",
-    "management",
-    "backend",
-    "api",
-    "express",
-    "mysql",
-    "jwt",
-    "permissions",
-    "rbac"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "mysql2": "^3.6.0",
-    "bcrypt": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "express-rate-limit": "^6.8.1",
-    "dotenv": "^16.3.1",
-    "multer": "^1.4.5-lts.1",
-    "xlsx": "^0.18.5",
-    "csv-parser": "^3.0.0"
+    "next": "14.0.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "framer-motion": "^10.16.4",
+    "lucide-react": "^0.292.0",
+    "@radix-ui/react-slot": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
-  },
-  "engines": {
-    "node": ">=16.0.0"
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0"
   }
 }

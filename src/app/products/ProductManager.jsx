@@ -53,7 +53,7 @@ const ProductManager = () => {
                 category: selectedCategory
             });
 
-            const response = await fetch(`https://13-201-222-24.nip.io/api/products?${params}`, {
+            const response = await fetch(`http://localhost:3001/api/products?${params}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -75,7 +75,7 @@ const ProductManager = () => {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('https://13-201-222-24.nip.io/api/products/categories/all', {
+            const response = await fetch('http://localhost:3001/api/products/categories/all', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -96,8 +96,8 @@ const ProductManager = () => {
         try {
             const token = localStorage.getItem('token');
             const url = editingProduct 
-                ? `https://13-201-222-24.nip.io/api/products/${editingProduct.p_id}`
-                : 'https://13-201-222-24.nip.io/api/products';
+                ? `http://localhost:3001/api/products/${editingProduct.p_id}`
+                : 'http://localhost:3001/api/products';
             
             const method = editingProduct ? 'PUT' : 'POST';
 
@@ -157,7 +157,7 @@ const ProductManager = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`https://13-201-222-24.nip.io/api/products/${productId}`, {
+            const response = await fetch(`http://localhost:3001/api/products/${productId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -193,7 +193,7 @@ const ProductManager = () => {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await fetch('https://13-201-222-24.nip.io/api/products/bulk/import', {
+            const response = await fetch('http://localhost:3001/api/products/bulk/import', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -219,7 +219,7 @@ const ProductManager = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('https://13-201-222-24.nip.io/api/products/categories', {
+            const response = await fetch('http://localhost:3001/api/products/categories', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
