@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     Package,
+    Package2,
     Truck,
     ChevronDown,
     LayoutDashboard,
@@ -305,6 +306,19 @@ const InventoryMenu = ({ onOpenOperation }) => {
                             >
                                 <MessageSquare size={collapsed ? 20 : 18} />
                                 {!collapsed && <span>Team Chat</span>}
+                            </Link>
+                        </SidebarMenuItem>
+                    )}
+
+                    {/* PRODUCTS */}
+                    {hasPermission(PERMISSIONS.PRODUCTS_VIEW) && (
+                        <SidebarMenuItem>
+                            <Link 
+                                href="/products" 
+                                className={cn(sidebarMenuButtonVariants({ active: pathname === "/products", collapsed }))}
+                            >
+                                <Package2 size={collapsed ? 20 : 18} />
+                                {!collapsed && <span>Products</span>}
                             </Link>
                         </SidebarMenuItem>
                     )}

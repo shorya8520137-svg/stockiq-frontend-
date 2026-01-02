@@ -19,6 +19,7 @@ const stockRoutes = require('./routes/stockRoutes');
 const transferRoutes = require('./routes/transferRoutes');
 const trackingRoutes = require('./routes/trackingRoutes');
 const timelineRoutes = require('./routes/timelineRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -106,6 +107,7 @@ app.use('/api/inventory-entry', inventoryEntryRoutes); // Bulk inventory upload
 app.use('/api/transfers', transferRoutes); // Inventory transfers
 app.use('/api/tracking', trackingRoutes); // Real-time tracking
 app.use('/api/tracker', timelineRoutes); // Product timeline and history
+app.use('/api/products', productRoutes); // Product management
 
 // Product tracking endpoint (legacy compatibility)
 app.get('/api/product-tracking/:barcode', require('./middleware/authMiddleware'), async (req, res) => {
