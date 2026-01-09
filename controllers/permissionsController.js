@@ -524,7 +524,7 @@ class PermissionsController {
             
             const [logs] = await db.execute(`
                 SELECT al.*, u.name as user_name, u.email as user_email
-                FROM audit_logs al
+                FROM audit_log al
                 LEFT JOIN users u ON al.user_id = u.id
                 WHERE ${whereClause}
                 ORDER BY al.created_at DESC
@@ -533,7 +533,7 @@ class PermissionsController {
             
             const [countResult] = await db.execute(`
                 SELECT COUNT(*) as total
-                FROM audit_logs al
+                FROM audit_log al
                 WHERE ${whereClause}
             `, params);
             
@@ -618,7 +618,7 @@ class PermissionsController {
     static async createAuditLog(userId, action, resource, resourceId, details) {
         try {
             await db.execute(`
-                INSERT INTO audit_logs (user_id, action, resource, resource_id, details)
+                INSERT INTO audit_log (user_id, action, resource_type, resource_id, new_values)
                 VALUES (?, ?, ?, ?, ?)
             `, [userId, action, resource, resourceId, JSON.stringify(details)]);
         } catch (error) {
