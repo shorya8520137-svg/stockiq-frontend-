@@ -110,9 +110,6 @@ class PermissionsController {
             });
         }
     }
-            });
-        }
-    }
     
     static async logout(req, res) {
         try {

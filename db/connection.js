@@ -9,7 +9,7 @@ const dbConfig = {
     port: 3306,
     acquireTimeout: 60000,
     timeout: 60000,
-    reconnect: true,
+    // reconnect: true, // Removed: Invalid option for MySQL2
     multipleStatements: true
 };
 
