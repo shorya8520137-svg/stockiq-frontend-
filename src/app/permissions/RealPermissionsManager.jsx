@@ -52,6 +52,9 @@ export default function RealPermissionsManager() {
 
     // Load data on component mount
     useEffect(() => {
+        // Only run on client side
+        if (typeof window === 'undefined') return;
+        
         // Check authentication status
         const currentUser = authAPI.getCurrentUser();
         if (!currentUser) {
@@ -287,7 +290,24 @@ export default function RealPermissionsManager() {
     }
 
     // Check if user is authenticated
-    const currentUser = authAPI.getCurrentUser();
+    const [currentUser, setCurrentUser] = useState(null);
+    const [isClient, setIsClient] = useState(false);
+
+    // Handle client-side hydration
+    useEffect(() => {
+        setIsClient(true);
+        setCurrentUser(authAPI.getCurrentUser());
+    }, []);
+
+    if (!isClient) {
+        return (
+            <div className={styles.loadingContainer}>
+                <div className={styles.spinner}></div>
+                <p>Loading...</p>
+            </div>
+        );
+    }
+
     if (!currentUser) {
         return (
             <div className={styles.loadingContainer}>

@@ -13,10 +13,14 @@ export const authAPI = {
                 body: JSON.stringify(credentials)
             });
             
-            // Store token and user data in localStorage
-            if (response.token) {
-                localStorage.setItem('authToken', response.token);
-                localStorage.setItem('user', JSON.stringify(response.user));
+            // Store token and user data in localStorage (browser only)
+            if (response.token && typeof window !== 'undefined') {
+                try {
+                    localStorage.setItem('authToken', response.token);
+                    localStorage.setItem('user', JSON.stringify(response.user));
+                } catch (error) {
+                    console.error('Error storing auth data:', error);
+                }
             }
             
             return response;
@@ -32,7 +36,7 @@ export const authAPI = {
      */
     async logout() {
         try {
-            const token = localStorage.getItem('authToken');
+            const token = this.getToken();
             
             if (token) {
                 await apiRequest('/auth/logout', {
@@ -45,9 +49,8 @@ export const authAPI = {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            // Clear local storage regardless of API call success
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
+            // Clear local storage regardless of API call success (browser only)
+            this.clearAuth();
         }
     },
 
@@ -57,7 +60,7 @@ export const authAPI = {
      */
     async refreshToken() {
         try {
-            const token = localStorage.getItem('authToken');
+            const token = this.getToken();
             
             if (!token) {
                 throw new Error('No token available');
@@ -70,16 +73,19 @@ export const authAPI = {
                 }
             });
             
-            if (response.token) {
-                localStorage.setItem('authToken', response.token);
+            if (response.token && typeof window !== 'undefined') {
+                try {
+                    localStorage.setItem('authToken', response.token);
+                } catch (error) {
+                    console.error('Error storing refreshed token:', error);
+                }
             }
             
             return response;
         } catch (error) {
             console.error('Token refresh error:', error);
             // Clear invalid token
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
+            this.clearAuth();
             throw error;
         }
     },
@@ -243,6 +249,10 @@ export const authAPI = {
      * @returns {Object|null} Current user
      */
     getCurrentUser() {
+        if (typeof window === 'undefined') {
+            return null; // Server-side rendering
+        }
+        
         try {
             const userStr = localStorage.getItem('user');
             return userStr ? JSON.parse(userStr) : null;
@@ -257,7 +267,16 @@ export const authAPI = {
      * @returns {string|null} Auth token
      */
     getToken() {
-        return localStorage.getItem('authToken');
+        if (typeof window === 'undefined') {
+            return null; // Server-side rendering
+        }
+        
+        try {
+            return localStorage.getItem('authToken');
+        } catch (error) {
+            console.error('Error getting auth token:', error);
+            return null;
+        }
     },
 
     /**
@@ -265,15 +284,32 @@ export const authAPI = {
      * @returns {boolean} Authentication status
      */
     isAuthenticated() {
-        return !!localStorage.getItem('authToken');
+        if (typeof window === 'undefined') {
+            return false; // Server-side rendering
+        }
+        
+        try {
+            return !!localStorage.getItem('authToken');
+        } catch (error) {
+            console.error('Error checking authentication:', error);
+            return false;
+        }
     },
 
     /**
      * Clear authentication data
      */
     clearAuth() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
+        if (typeof window === 'undefined') {
+            return; // Server-side rendering
+        }
+        
+        try {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+        } catch (error) {
+            console.error('Error clearing auth data:', error);
+        }
     },
 
     /**
