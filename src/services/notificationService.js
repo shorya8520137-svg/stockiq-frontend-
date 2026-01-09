@@ -44,8 +44,14 @@ class NotificationService {
             this.notifications = this.notifications.slice(0, 100);
         }
 
-        // Store in localStorage for persistence
-        localStorage.setItem('app_notifications', JSON.stringify(this.notifications));
+        // Store in localStorage for persistence (browser only)
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('app_notifications', JSON.stringify(this.notifications));
+            } catch (error) {
+                console.error('Error storing notifications:', error);
+            }
+        }
 
         // Notify listeners
         this.notifyListeners();
@@ -93,8 +99,14 @@ class NotificationService {
             notification.isRead = true;
             notification.readAt = new Date().toISOString();
             
-            // Update localStorage
-            localStorage.setItem('app_notifications', JSON.stringify(this.notifications));
+            // Update localStorage (browser only)
+            if (typeof window !== 'undefined') {
+                try {
+                    localStorage.setItem('app_notifications', JSON.stringify(this.notifications));
+                } catch (error) {
+                    console.error('Error updating notifications:', error);
+                }
+            }
             
             // Notify listeners
             this.notifyListeners();
@@ -111,8 +123,14 @@ class NotificationService {
             }
         });
 
-        // Update localStorage
-        localStorage.setItem('app_notifications', JSON.stringify(this.notifications));
+        // Update localStorage (browser only)
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('app_notifications', JSON.stringify(this.notifications));
+            } catch (error) {
+                console.error('Error updating notifications:', error);
+            }
+        }
         
         // Notify listeners
         this.notifyListeners();
@@ -122,8 +140,14 @@ class NotificationService {
     deleteNotification(notificationId) {
         this.notifications = this.notifications.filter(n => n.id !== notificationId);
         
-        // Update localStorage
-        localStorage.setItem('app_notifications', JSON.stringify(this.notifications));
+        // Update localStorage (browser only)
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('app_notifications', JSON.stringify(this.notifications));
+            } catch (error) {
+                console.error('Error updating notifications:', error);
+            }
+        }
         
         // Notify listeners
         this.notifyListeners();
@@ -131,6 +155,10 @@ class NotificationService {
 
     // Load notifications from localStorage
     loadNotifications() {
+        if (typeof window === 'undefined') {
+            return; // Server-side rendering
+        }
+        
         try {
             const stored = localStorage.getItem('app_notifications');
             if (stored) {
@@ -216,8 +244,10 @@ class NotificationService {
 // Create singleton instance
 const notificationService = new NotificationService();
 
-// Load existing notifications on startup
-notificationService.loadNotifications();
+// Load existing notifications on startup (browser only)
+if (typeof window !== 'undefined') {
+    notificationService.loadNotifications();
+}
 
 export default notificationService;
 

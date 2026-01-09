@@ -4,18 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { 
     Users, 
     Shield, 
-    Settings, 
     Eye, 
-    EyeOff, 
     Plus, 
     Edit, 
     Trash2, 
     Search, 
-    Filter, 
     RefreshCw,
-    User,
     Key,
-    BarChart3,
     Activity,
     AlertCircle,
     CheckCircle
@@ -42,6 +37,10 @@ export default function RealPermissionsManager() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRole, setSelectedRole] = useState('all');
     
+    // Client-side state
+    const [currentUser, setCurrentUser] = useState(null);
+    const [isClient, setIsClient] = useState(false);
+    
     // Form state
     const [userForm, setUserForm] = useState({
         name: '',
@@ -50,14 +49,18 @@ export default function RealPermissionsManager() {
         password: ''
     });
 
-    // Load data on component mount
+    // Handle client-side hydration
     useEffect(() => {
+        setIsClient(true);
+        
         // Only run on client side
         if (typeof window === 'undefined') return;
         
         // Check authentication status
-        const currentUser = authAPI.getCurrentUser();
-        if (!currentUser) {
+        const user = authAPI.getCurrentUser();
+        setCurrentUser(user);
+        
+        if (!user) {
             showMessage('Please login to access the Access Controller', 'error');
             return;
         }
@@ -288,16 +291,6 @@ export default function RealPermissionsManager() {
             </div>
         );
     }
-
-    // Check if user is authenticated
-    const [currentUser, setCurrentUser] = useState(null);
-    const [isClient, setIsClient] = useState(false);
-
-    // Handle client-side hydration
-    useEffect(() => {
-        setIsClient(true);
-        setCurrentUser(authAPI.getCurrentUser());
-    }, []);
 
     if (!isClient) {
         return (

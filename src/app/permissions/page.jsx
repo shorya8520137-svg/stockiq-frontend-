@@ -1,5 +1,8 @@
 import RealPermissionsManager from "./RealPermissionsManager.jsx";
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 export default function PermissionsPage() {
     return (
         <div style={{ 

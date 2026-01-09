@@ -19,9 +19,13 @@ export class PermissionsAPI {
                 throw new Error(data.message || `Login failed: ${response.status}`);
             }
             
-            // Store JWT token
-            if (data.token) {
-                localStorage.setItem('authToken', data.token);
+            // Store JWT token (browser only)
+            if (data.token && typeof window !== 'undefined') {
+                try {
+                    localStorage.setItem('authToken', data.token);
+                } catch (error) {
+                    console.error('Error storing auth token:', error);
+                }
             }
             
             return data;
@@ -33,28 +37,32 @@ export class PermissionsAPI {
     
     static async logout() {
         try {
-            const token = localStorage.getItem('authToken');
+            const token = this.getAuthToken();
             
-            await fetch(`${API_BASE}/auth/logout`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                }
-            });
+            if (token) {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+            }
             
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
+            this.clearAuth();
         } catch (error) {
             console.error('Logout error:', error);
             // Clear local storage anyway
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('user');
+            this.clearAuth();
         }
     }
     
     static async refreshToken() {
         try {
+            if (typeof window === 'undefined') {
+                throw new Error('Token refresh not available on server');
+            }
+            
             const token = localStorage.getItem('authToken');
             
             const response = await fetch(`${API_BASE}/auth/refresh`, {
@@ -246,6 +254,10 @@ export class PermissionsAPI {
     // ================= HELPER METHODS ================= //
     
     static async makeAuthenticatedRequest(endpoint, options = {}) {
+        if (typeof window === 'undefined') {
+            throw new Error('Authenticated requests not available on server');
+        }
+        
         const token = localStorage.getItem('authToken');
         
         const defaultOptions = {
@@ -313,10 +325,28 @@ export class PermissionsAPI {
     }
     
     static getAuthToken() {
-        return localStorage.getItem('authToken');
+        if (typeof window === 'undefined') {
+            return null; // Server-side rendering
+        }
+        
+        try {
+            return localStorage.getItem('authToken');
+        } catch (error) {
+            console.error('Error getting auth token:', error);
+            return null;
+        }
     }
     
     static isAuthenticated() {
-        return !!localStorage.getItem('authToken');
+        if (typeof window === 'undefined') {
+            return false; // Server-side rendering
+        }
+        
+        try {
+            return !!localStorage.getItem('authToken');
+        } catch (error) {
+            console.error('Error checking authentication:', error);
+            return false;
+        }
     }
 }
