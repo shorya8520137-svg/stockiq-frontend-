@@ -130,39 +130,21 @@ const PermissionsPage = () => {
     const loadUsers = async () => {
         setLoading(true);
         try {
-            // Mock users for demo - replace with API call
-            const mockUsers = [
-                {
-                    id: 1,
-                    name: 'Super Admin',
-                    email: 'admin@example.com',
-                    role: 'super_admin',
-                    status: 'active',
-                    lastLogin: '2024-01-09T10:00:00Z',
-                    createdAt: '2024-01-01T00:00:00Z'
-                },
-                {
-                    id: 2,
-                    name: 'Manager User',
-                    email: 'manager@example.com',
-                    role: 'manager',
-                    status: 'active',
-                    lastLogin: '2024-01-09T09:30:00Z',
-                    createdAt: '2024-01-02T00:00:00Z'
-                },
-                {
-                    id: 3,
-                    name: 'Warehouse Staff',
-                    email: 'warehouse@example.com',
-                    role: 'warehouse_staff',
-                    status: 'active',
-                    lastLogin: '2024-01-09T08:00:00Z',
-                    createdAt: '2024-01-03T00:00:00Z'
-                }
-            ];
-            setUsers(mockUsers);
+            // Use real API instead of mock data
+            const { authAPI } = await import('@/services/api/auth');
+            const response = await authAPI.getUsers();
+            
+            if (response.success) {
+                setUsers(response.data || []);
+            } else {
+                throw new Error(response.message || 'Failed to load users');
+            }
         } catch (error) {
-            showNotification('Failed to load users', 'error');
+            console.error('Failed to load users:', error);
+            showNotification('Failed to load users: ' + error.message, 'error');
+            
+            // Fallback to empty array instead of mock data
+            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -184,137 +166,46 @@ const PermissionsPage = () => {
 
     const loadComponentPermissions = async () => {
         try {
-            // Mock component permissions - replace with API call
-            const mockPermissions = {
-                1: { // user_id
-                    'ProductManager': ['add_product', 'export_all'],
-                    'InventorySheet': ['timeline'],
-                    'OrderSheet': ['kpi_cards', 'remarks'],
-                    'Operations': ['dispatch']
-                },
-                2: { // user_id
-                    'ProductManager': ['add_product', 'bulk_import', 'export_all', 'add_category'],
-                    'InventorySheet': ['timeline'],
-                    'OrderSheet': ['kpi_cards', 'delete_checkbox', 'status_dropdown', 'remarks'],
-                    'Operations': ['dispatch', 'damage', 'return']
-                }
-            };
-            setComponentPermissions(mockPermissions);
+            // Use real API instead of mock data
+            // For now, initialize empty until we have component permissions API
+            setComponentPermissions({});
         } catch (error) {
             console.error('Failed to load component permissions:', error);
+            setComponentPermissions({});
         }
     };
 
     const loadActivityLogs = async () => {
         try {
-            // Mock activity logs - replace with API call
-            const mockLogs = [
-                {
-                    id: 1,
-                    timestamp: '2024-01-09T10:30:00Z',
-                    user: 'admin@example.com',
-                    userName: 'Super Admin',
-                    action: 'LOGIN',
-                    component: 'AUTH',
-                    details: 'User logged in successfully',
-                    ipAddress: '192.168.1.100',
-                    userAgent: 'Chrome 120.0.0.0',
-                    success: true
-                },
-                {
-                    id: 2,
-                    timestamp: '2024-01-09T10:25:00Z',
-                    user: 'manager@example.com',
-                    userName: 'Manager User',
-                    action: 'CREATE_PRODUCT',
-                    component: 'ProductManager',
-                    details: 'Created new product: Assembly Charge',
-                    ipAddress: '192.168.1.101',
-                    userAgent: 'Chrome 120.0.0.0',
-                    success: true,
-                    data: { productId: 'P001', barcode: '2788-500' }
-                },
-                {
-                    id: 3,
-                    timestamp: '2024-01-09T10:20:00Z',
-                    user: 'warehouse@example.com',
-                    userName: 'Warehouse Staff',
-                    action: 'DISPATCH_SUBMIT',
-                    component: 'Operations',
-                    details: 'Submitted dispatch order for approval',
-                    ipAddress: '192.168.1.102',
-                    userAgent: 'Chrome 120.0.0.0',
-                    success: true,
-                    data: { orderId: 'D001', items: 5, warehouse: 'GGM_WH' }
-                },
-                {
-                    id: 4,
-                    timestamp: '2024-01-09T10:15:00Z',
-                    user: 'admin@example.com',
-                    userName: 'Super Admin',
-                    action: 'UPDATE_USER',
-                    component: 'USER_MANAGEMENT',
-                    details: 'Updated user permissions for manager@example.com',
-                    ipAddress: '192.168.1.100',
-                    userAgent: 'Chrome 120.0.0.0',
-                    success: true,
-                    data: { targetUser: 'manager@example.com', permissionsChanged: 3 }
-                },
-                {
-                    id: 5,
-                    timestamp: '2024-01-09T10:10:00Z',
-                    user: 'manager@example.com',
-                    userName: 'Manager User',
-                    action: 'BULK_UPLOAD',
-                    component: 'ProductManager',
-                    details: 'Bulk uploaded 150 products',
-                    ipAddress: '192.168.1.101',
-                    userAgent: 'Chrome 120.0.0.0',
-                    success: true,
-                    data: { itemsUploaded: 150, warehouse: 'BLR_WH' }
-                },
-                {
-                    id: 6,
-                    timestamp: '2024-01-09T10:05:00Z',
-                    user: 'warehouse@example.com',
-                    userName: 'Warehouse Staff',
-                    action: 'LOGIN_FAILED',
-                    component: 'AUTH',
-                    details: 'Failed login attempt - invalid password',
-                    ipAddress: '192.168.1.102',
-                    userAgent: 'Chrome 120.0.0.0',
-                    success: false
-                },
-                {
-                    id: 7,
-                    timestamp: '2024-01-09T09:55:00Z',
-                    user: 'admin@example.com',
-                    userName: 'Super Admin',
-                    action: 'DELETE_USER',
-                    component: 'USER_MANAGEMENT',
-                    details: 'Deleted user account: olduser@example.com',
-                    ipAddress: '192.168.1.100',
-                    userAgent: 'Chrome 120.0.0.0',
-                    success: true,
-                    data: { deletedUser: 'olduser@example.com', role: 'user' }
-                },
-                {
-                    id: 8,
-                    timestamp: '2024-01-09T09:50:00Z',
-                    user: 'manager@example.com',
-                    userName: 'Manager User',
-                    action: 'EXPORT_DATA',
-                    component: 'InventorySheet',
-                    details: 'Exported inventory data for Mumbai warehouse',
-                    ipAddress: '192.168.1.101',
-                    userAgent: 'Chrome 120.0.0.0',
-                    success: true,
-                    data: { warehouse: 'MUM_WH', recordsExported: 2500 }
-                }
-            ];
-            setActivityLogs(mockLogs);
+            // Use real API instead of mock data
+            const { authAPI } = await import('@/services/api/auth');
+            const response = await authAPI.getAuditLogs({ limit: 50 });
+            
+            if (response.success) {
+                // Transform backend data to match frontend format
+                const transformedLogs = (response.data?.logs || []).map(log => ({
+                    id: log.id,
+                    timestamp: log.created_at,
+                    user: log.user_email || 'System',
+                    userName: log.user_name || 'System',
+                    action: log.action,
+                    component: log.resource_type || 'SYSTEM',
+                    details: log.new_values ? JSON.stringify(log.new_values) : 'No details',
+                    ipAddress: log.ip_address || 'Unknown',
+                    userAgent: log.user_agent || 'Unknown',
+                    success: log.success !== false,
+                    data: log.new_values ? JSON.parse(log.new_values) : {}
+                }));
+                
+                setActivityLogs(transformedLogs);
+            } else {
+                throw new Error(response.message || 'Failed to load activity logs');
+            }
         } catch (error) {
             console.error('Failed to load activity logs:', error);
+            
+            // Fallback to empty array instead of mock data
+            setActivityLogs([]);
         }
     };
 
@@ -331,46 +222,70 @@ const PermissionsPage = () => {
                 return;
             }
 
-            // Mock user creation - replace with API call
-            const newUser = {
-                id: users.length + 1,
-                ...userForm,
-                createdAt: new Date().toISOString(),
-                lastLogin: null
-            };
+            // Use real API instead of mock
+            const { authAPI } = await import('@/services/api/auth');
+            const response = await authAPI.createUser({
+                name: userForm.name,
+                email: userForm.email,
+                password: userForm.password,
+                role_id: userForm.role, // Map role to role_id
+                status: userForm.status
+            });
 
-            setUsers([...users, newUser]);
-            setUserForm({ name: '', email: '', password: '', role: '', status: 'active', permissions: [] });
-            setShowAddUser(false);
-            
-            // Log action
-            await logAction('CREATE_USER', 'USER', { email: userForm.email, role: userForm.role });
-            
-            showNotification('User created successfully');
+            if (response.success) {
+                // Reload users from backend
+                await loadUsers();
+                setUserForm({ name: '', email: '', password: '', role: '', status: 'active', permissions: [] });
+                setShowAddUser(false);
+                
+                // Log action
+                await logAction('CREATE_USER', 'USER', { email: userForm.email, role: userForm.role });
+                
+                showNotification('User created successfully');
+            } else {
+                throw new Error(response.message || 'Failed to create user');
+            }
         } catch (error) {
-            showNotification('Failed to create user', 'error');
+            console.error('Failed to create user:', error);
+            showNotification('Failed to create user: ' + error.message, 'error');
         }
     };
 
     const handleUpdateUser = async () => {
         try {
-            // Mock user update - replace with API call
-            const updatedUsers = users.map(u => 
-                u.id === editingUser.id 
-                    ? { ...u, ...userForm, updatedAt: new Date().toISOString() }
-                    : u
-            );
+            // Use real API instead of mock
+            const { authAPI } = await import('@/services/api/auth');
             
-            setUsers(updatedUsers);
-            setEditingUser(null);
-            setUserForm({ name: '', email: '', password: '', role: '', status: 'active', permissions: [] });
+            const updateData = {
+                name: userForm.name,
+                email: userForm.email,
+                role_id: userForm.role,
+                status: userForm.status
+            };
             
-            // Log action
-            await logAction('UPDATE_USER', 'USER', { userId: editingUser.id, changes: userForm });
+            // Only include password if provided
+            if (userForm.password) {
+                updateData.password = userForm.password;
+            }
             
-            showNotification('User updated successfully');
+            const response = await authAPI.updateUser(editingUser.id, updateData);
+            
+            if (response.success) {
+                // Reload users from backend
+                await loadUsers();
+                setEditingUser(null);
+                setUserForm({ name: '', email: '', password: '', role: '', status: 'active', permissions: [] });
+                
+                // Log action
+                await logAction('UPDATE_USER', 'USER', { userId: editingUser.id, changes: userForm });
+                
+                showNotification('User updated successfully');
+            } else {
+                throw new Error(response.message || 'Failed to update user');
+            }
         } catch (error) {
-            showNotification('Failed to update user', 'error');
+            console.error('Failed to update user:', error);
+            showNotification('Failed to update user: ' + error.message, 'error');
         }
     };
 
@@ -378,15 +293,24 @@ const PermissionsPage = () => {
         if (!confirm('Are you sure you want to delete this user?')) return;
         
         try {
-            const updatedUsers = users.filter(u => u.id !== userId);
-            setUsers(updatedUsers);
+            // Use real API instead of mock
+            const { authAPI } = await import('@/services/api/auth');
+            const response = await authAPI.deleteUser(userId);
             
-            // Log action
-            await logAction('DELETE_USER', 'USER', { userId });
-            
-            showNotification('User deleted successfully');
+            if (response.success) {
+                // Reload users from backend
+                await loadUsers();
+                
+                // Log action
+                await logAction('DELETE_USER', 'USER', { userId });
+                
+                showNotification('User deleted successfully');
+            } else {
+                throw new Error(response.message || 'Failed to delete user');
+            }
         } catch (error) {
-            showNotification('Failed to delete user', 'error');
+            console.error('Failed to delete user:', error);
+            showNotification('Failed to delete user: ' + error.message, 'error');
         }
     };
 
