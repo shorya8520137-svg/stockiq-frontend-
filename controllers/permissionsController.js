@@ -95,9 +95,21 @@ class PermissionsController {
             
         } catch (error) {
             console.error('Login error:', error);
+            
+            // Handle missing table gracefully
+            if (error.code === 'ER_NO_SUCH_TABLE') {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Authentication system not configured'
+                });
+            }
+            
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
+            });
+        }
+    }
             });
         }
     }

@@ -79,7 +79,7 @@ export class PermissionsAPI {
             
             const data = await response.json();
             
-            if (data.token) {
+            if (data.token && typeof window !== 'undefined') {
                 localStorage.setItem('authToken', data.token);
             }
             
@@ -285,8 +285,10 @@ export class PermissionsAPI {
                 try {
                     await this.refreshToken();
                     // Retry the request with new token
-                    const newToken = localStorage.getItem('authToken');
-                    requestOptions.headers.Authorization = `Bearer ${newToken}`;
+                    if (typeof window !== 'undefined') {
+                        const newToken = localStorage.getItem('authToken');
+                        requestOptions.headers.Authorization = `Bearer ${newToken}`;
+                    }
                     const retryResponse = await fetch(`${API_BASE}${endpoint}`, requestOptions);
                     
                     if (!retryResponse.ok) {
@@ -297,9 +299,9 @@ export class PermissionsAPI {
                     return await retryResponse.json();
                 } catch (refreshError) {
                     // Refresh failed, redirect to login
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('user');
                     if (typeof window !== 'undefined') {
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('user');
                         window.location.href = '/login';
                     }
                     throw new Error('Authentication failed');

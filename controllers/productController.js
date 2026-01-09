@@ -63,6 +63,23 @@ class ProductController {
         db.query(dataSql, [...params, limit, offset], (err, rows) => {
             if (err) {
                 console.error('getAllProducts:', err);
+                
+                // Handle missing table gracefully
+                if (err.code === 'ER_NO_SUCH_TABLE') {
+                    return res.json({
+                        success: true,
+                        data: {
+                            products: [],
+                            pagination: {
+                                page,
+                                limit,
+                                total: 0,
+                                pages: 0
+                            }
+                        }
+                    });
+                }
+                
                 return res.status(500).json({ 
                     success: false, 
                     message: 'Failed to fetch products' 
@@ -1198,6 +1215,15 @@ class ProductController {
             (err, rows) => {
                 if (err) {
                     console.error('getCategories:', err);
+                    
+                    // Handle missing table gracefully
+                    if (err.code === 'ER_NO_SUCH_TABLE') {
+                        return res.json({ 
+                            success: true, 
+                            data: [] // Return empty array if table doesn't exist
+                        });
+                    }
+                    
                     return res.status(500).json({ 
                         success: false, 
                         message: 'Failed to fetch categories' 
