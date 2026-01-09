@@ -205,22 +205,24 @@
     overflow: auto;
     border-radius: 12px;
     border: 1px solid #e5e7eb;
-    /* Hide scrollbar for Chrome, Safari and Opera */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    /* Show scrollbar for better UX */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: #cbd5e1 #f1f5f9;
     /* Smooth scrolling */
     scroll-behavior: smooth;
     /* Enable momentum scrolling on iOS */
     -webkit-overflow-scrolling: touch;
     /* Prevent edge cutting */
     margin: 0;
-    min-height: 300px; /* Ensure minimum height */
-    max-height: 60vh; /* Limit maximum height to prevent overflow */
+    min-height: 200px;
+    max-height: calc(90vh - 320px); /* Dynamic height based on modal */
     position: relative;
     animation: tableFadeIn 0.4s ease-out 0.2s both;
-    /* Force proper scrolling on all devices */
+    /* Force proper scrolling */
     overflow-x: auto;
     overflow-y: auto;
+    /* Add padding at bottom for last row visibility */
+    padding-bottom: 8px;
 }
 
 @keyframes tableFadeIn {
@@ -234,8 +236,24 @@
     }
 }
 
+/* Custom scrollbar for webkit browsers */
 .tableWrapper::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    width: 8px;
+    height: 8px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .logTable {
@@ -300,6 +318,11 @@
     transform: translateX(2px);
 }
 
+.logTable tbody tr:last-child td {
+    border-bottom: none;
+    padding-bottom: 16px; /* Extra padding for last row */
+}
+
 .activeRow {
     background: #eff6ff !important;
     border-left: 3px solid #2563eb;
@@ -310,6 +333,11 @@
 .activeRow td {
     font-weight: 500;
     color: #1e40af;
+}
+
+.negativeBalance {
+    color: #dc2626 !important;
+    font-weight: 600;
 }
 
 .status {
@@ -330,6 +358,11 @@
 
 /* === EVENT COLORS === */
 .OPENING {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.BULK_UPLOAD {
     background: #e0f2fe;
     color: #0369a1;
 }
@@ -453,7 +486,7 @@
     }
 
     .breakdownBox {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 10px;
         padding: 12px;
     }
@@ -468,8 +501,8 @@
 
     .tableWrapper {
         border-radius: 8px;
-        max-height: 50vh; /* Smaller max height on mobile */
-        min-height: 250px;
+        max-height: calc(95vh - 350px);
+        min-height: 200px;
     }
 
     .logTable {
@@ -495,12 +528,12 @@
     }
 
     .breakdownBox {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .tableWrapper {
-        max-height: 45vh;
-        min-height: 200px;
+        max-height: calc(95vh - 380px);
+        min-height: 150px;
     }
 }
 
@@ -508,12 +541,16 @@
 @media (min-width: 769px) {
     .tableWrapper {
         /* Ensure proper scrolling on desktop */
-        max-height: 55vh;
-        min-height: 350px;
+        max-height: calc(90vh - 300px);
+        min-height: 300px;
     }
     
     .modal {
         /* Better height distribution on desktop */
         min-height: 600px;
+    }
+    
+    .breakdownBox {
+        grid-template-columns: repeat(5, 1fr);
     }
 }

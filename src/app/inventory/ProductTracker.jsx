@@ -8,9 +8,12 @@ import { api } from "../../utils/api";
 /* ================= LABEL MAP ================= */
 const LABELS = {
     OPENING: "Opening",
+    BULK_UPLOAD: "Bulk Upload",
+    DISPATCH: "Dispatch",
     SALE: "Dispatch",
     RETURN: "Return",
     DAMAGE: "Damage",
+    RECOVER: "Recover",
     RECOVERY: "Recover",
     SELF_TRANSFER: "Transfer",
     ADJUSTMENT_IN: "Adjustment In",
@@ -37,11 +40,16 @@ export default function ProductTracker({
     const [toDate, setToDate] = useState("");
 
     const [summary, setSummary] = useState({
-        openingStock: 0,
+        opening: 0,
+        bulkUpload: 0,
         dispatch: 0,
         damage: 0,
         returns: 0,
         recovery: 0,
+        selfTransferIn: 0,
+        selfTransferOut: 0,
+        totalIn: 0,
+        totalOut: 0,
         finalStock: 0,
     });
 
@@ -65,10 +73,8 @@ export default function ProductTracker({
                 setLoading(true);
                 setError("");
 
-                // ✅ FULL ROUTE (api.js remains unchanged)
-                let url = `/api/tracker/inventory/timeline/${encodeURIComponent(
-                    barcode
-                )}`;
+                // ✅ Updated to use new timeline API
+                let url = `/timeline/${encodeURIComponent(barcode)}`;
 
                 if (warehouseFilter && warehouseFilter !== "ALL") {
                     url += `?warehouse=${encodeURIComponent(warehouseFilter)}`;
@@ -77,23 +83,55 @@ export default function ProductTracker({
                 const data = await api(url);
                 if (!mounted) return;
 
-                if (!Array.isArray(data.timeline)) {
+                // Handle new timeline API response format from controller
+                const timelineData = data.data?.timeline || [];
+                const summaryData = data.data?.summary || {};
+                const breakdown = summaryData.breakdown || {};
+
+                if (!Array.isArray(timelineData)) {
                     throw new Error("Invalid API response");
                 }
 
-                setSummary({
-                    openingStock: data.openingStock || 0,
-                    dispatch: data.totals?.dispatch || 0,
-                    damage: data.totals?.damage || 0,
-                    returns: data.totals?.returns || 0,
-                    recovery: data.totals?.recovery || 0,
-                    finalStock: data.finalStock || 0,
-                });
+                // Timeline already has balance_after calculated by controller
+                // Just format for display
+                const formattedTimeline = timelineData.map((item, index) => ({
+                    ...item,
+                    timestamp: item.timestamp,
+                    type: item.type,
+                    quantity: item.quantity || 0,
+                    warehouse: item.warehouse,
+                    reference: item.reference,
+                    direction: item.direction,
+                    balance_after: item.balance_after || 0,
+                    description: item.description || ''
+                }));
 
-                setTimeline(data.timeline);
+                console.log('📊 Timeline entries:', formattedTimeline.length);
+                console.log('📊 Summary from API:', summaryData);
+
+                // Use summary directly from controller (already calculated correctly)
+                const calculatedSummary = {
+                    opening: breakdown.opening || 0,
+                    bulkUpload: breakdown.bulk_upload || 0,
+                    dispatch: breakdown.dispatch || 0,
+                    damage: breakdown.damage || 0,
+                    returns: breakdown.returns || 0,
+                    recovery: breakdown.recovery || 0,
+                    selfTransferIn: breakdown.self_transfer_in || 0,
+                    selfTransferOut: breakdown.self_transfer_out || 0,
+                    totalIn: summaryData.total_in || 0,
+                    totalOut: summaryData.total_out || 0,
+                    finalStock: summaryData.current_stock || 0,
+                };
+
+                console.log('📊 Calculated summary:', calculatedSummary);
+
+                setSummary(calculatedSummary);
+                setTimeline(formattedTimeline);
                 setLoading(false);
             } catch (err) {
                 if (mounted) {
+                    console.error('Timeline fetch error:', err);
                     setError("Failed to load tracking data");
                     setLoading(false);
                 }
@@ -244,14 +282,26 @@ export default function ProductTracker({
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.3, delay: 0.1 }}
+                                transition={{ duration: 0.3, delay: 0.05 }}
                             >
-                                Opening Stock: <motion.strong
-                                    key={summary.openingStock}
+                                Opening: <motion.strong
+                                    key={summary.opening}
                                     initial={{ scale: 1.2 }}
                                     animate={{ scale: 1 }}
                                     transition={{ duration: 0.3 }}
-                                >{summary.openingStock}</motion.strong>
+                                >{summary.opening}</motion.strong>
+                            </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3, delay: 0.1 }}
+                            >
+                                Bulk Upload: <motion.strong
+                                    key={summary.bulkUpload}
+                                    initial={{ scale: 1.2 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                >{summary.bulkUpload}</motion.strong>
                             </motion.div>
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.9 }}
@@ -301,11 +351,35 @@ export default function ProductTracker({
                                     transition={{ duration: 0.3 }}
                                 >{summary.recovery}</motion.span>
                             </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3, delay: 0.32 }}
+                            >
+                                Transfer In: <motion.span
+                                    key={summary.selfTransferIn}
+                                    initial={{ scale: 1.2 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                >{summary.selfTransferIn}</motion.span>
+                            </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3, delay: 0.34 }}
+                            >
+                                Transfer Out: <motion.span
+                                    key={summary.selfTransferOut}
+                                    initial={{ scale: 1.2 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                >{summary.selfTransferOut}</motion.span>
+                            </motion.div>
                             <motion.div 
                                 className={styles.finalStock}
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.3, delay: 0.35 }}
+                                transition={{ duration: 0.3, delay: 0.4 }}
                             >
                                 Final Stock: <motion.strong
                                     key={summary.finalStock}
@@ -453,7 +527,7 @@ export default function ProductTracker({
                                                 <td>{time.slice(0, 8)}</td>
                                                 <td>{row.warehouse}</td>
                                                 <td>{row.reference || "—"}</td>
-                                                <td>{row.balance_after}</td>
+                                                <td className={row.balance_after < 0 ? styles.negativeBalance : ''}>{row.balance_after}</td>
                                             </motion.tr>
                                         );
                                     })}

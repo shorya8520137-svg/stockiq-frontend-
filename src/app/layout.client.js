@@ -14,7 +14,7 @@ import {
 import TopNavBar from "@/components/TopNavBar";
 import { useAuth } from "@/contexts/AuthContext";
 import SemiDial from "@/app/inventory/selftransfer/SemiDial";
-import TransferFIFO from "@/app/inventory/selftransfer/TransferFIFO";
+import TransferForm from "@/app/products/TransferForm";
 import DispatchForm from "@/app/order/dispatch/DispatchForm";
 import DamageRecoveryModal from "@/app/inventory/selftransfer/DamageRecoveryModal";
 import ReturnModal from "@/app/inventory/selftransfer/ReturnModal";
@@ -34,9 +34,9 @@ export default function ClientLayout({ children }) {
         return null;
     }
 
-    // If on login page and already logged in, redirect to dashboard
+    // If on login page and already logged in, redirect to products
     if (!loading && user && isLoginPage) {
-        router.push("/dashboard");
+        router.push("/products");
         return null;
     }
 
@@ -99,7 +99,7 @@ export default function ClientLayout({ children }) {
                 <SemiDial onCommand={handleCommand} />
 
                 {/* MODALS */}
-                {openFIFO && <TransferFIFO onClose={() => setOpenFIFO(false)} />}
+                {openFIFO && <TransferForm onClose={() => setOpenFIFO(false)} />}
                 
                 {/* Individual Operation Modals */}
                 {operationsOpen && operationTab === "dispatch" && (

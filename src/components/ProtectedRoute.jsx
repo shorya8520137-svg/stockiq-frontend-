@@ -12,7 +12,7 @@ export default function ProtectedRoute({ children, requiredPermission = null }) 
         if (!loading && !user) {
             router.push("/login");
         } else if (!loading && user && requiredPermission && !hasPermission(requiredPermission)) {
-            router.push("/dashboard");
+            router.push("/products");
         }
     }, [user, loading, requiredPermission, hasPermission, router]);
 

@@ -8,8 +8,6 @@ import {
     Package2,
     Truck,
     ChevronDown,
-    LayoutDashboard,
-    MapPin,
     Menu,
     ChevronLeft,
     ChevronRight,
@@ -17,9 +15,8 @@ import {
     Box,
     LogOut,
     Plus,
-    MessageSquare
+    Shield
 } from "lucide-react";
-import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -133,23 +130,6 @@ const sidebarMenuButtonVariants = cva(
     }
 );
 
-const SidebarMenuButton = ({ asChild, className, active, collapsed, icon: Icon, children, ...props }) => {
-    const Comp = asChild ? Slot : "button";
-    
-    return (
-        <Comp
-            className={cn(sidebarMenuButtonVariants({ active, collapsed }), className)}
-            {...props}
-        >
-             {/* If we are using asChild (Link), the immediate child is the Link. 
-                But for styling, we usually put the Icon inside the Link.
-                Here we assume children contains the icon + text if expanded.
-             */}
-             {children}
-        </Comp>
-    );
-};
-
 /* ================= MENU ================= */
 
 const InventoryMenu = ({ onOpenOperation }) => {
@@ -160,9 +140,6 @@ const InventoryMenu = ({ onOpenOperation }) => {
 
     const isInventoryRoute = pathname.startsWith("/inventory");
     const isOrdersRoute = pathname.startsWith("/order");
-    const isTrackingRoute = pathname.startsWith("/tracking");
-    const isMessagesRoute = pathname.startsWith("/messages");
-    const isPermissionsRoute = pathname.startsWith("/permissions");
 
     // Local state for expanded submenus (only relevant when sidebar is NOT collapsed)
     const [inventoryOpen, setInventoryOpen] = React.useState(true); // Default open for visibility
@@ -188,7 +165,7 @@ const InventoryMenu = ({ onOpenOperation }) => {
                     exit={{ opacity: 0 }}
                     className="overflow-hidden whitespace-nowrap"
                 >
-                    <div className="text-sm font-bold text-slate-900">Acme Inc</div>
+                    <div className="text-sm font-bold text-slate-900">hunyhuny</div>
                     <div className="text-xs text-slate-500">Enterprise</div>
                 </motion.div>
             )}
@@ -271,44 +248,9 @@ const InventoryMenu = ({ onOpenOperation }) => {
             <SidebarContent>
                 <SidebarMenu>
                     
-                    {/* DASHBOARD */}
-                    {hasPermission(PERMISSIONS.DASHBOARD_VIEW) && (
-                        <SidebarMenuItem>
-                             <Link 
-                                href="/dashboard" 
-                                className={cn(sidebarMenuButtonVariants({ active: pathname === "/dashboard", collapsed }))}
-                            >
-                                <LayoutDashboard size={collapsed ? 20 : 18} />
-                                {!collapsed && <span>Dashboard</span>}
-                            </Link>
-                        </SidebarMenuItem>
-                    )}
+                    {/* DASHBOARD - DISABLED - Code removed for cleaner build */}
 
-                    {/* TRACKING */}
-                    {hasPermission(PERMISSIONS.TRACKING_VIEW) && (
-                        <SidebarMenuItem>
-                            <Link 
-                                href="/tracking" 
-                                className={cn(sidebarMenuButtonVariants({ active: isTrackingRoute, collapsed }))}
-                            >
-                                <MapPin size={collapsed ? 20 : 18} />
-                                {!collapsed && <span>Tracking</span>}
-                            </Link>
-                        </SidebarMenuItem>
-                    )}
-
-                    {/* MESSAGES */}
-                    {hasPermission(PERMISSIONS.MESSAGES_VIEW) && (
-                        <SidebarMenuItem>
-                            <Link 
-                                href="/messages" 
-                                className={cn(sidebarMenuButtonVariants({ active: isMessagesRoute, collapsed }))}
-                            >
-                                <MessageSquare size={collapsed ? 20 : 18} />
-                                {!collapsed && <span>Team Chat</span>}
-                            </Link>
-                        </SidebarMenuItem>
-                    )}
+                    {/* TRACKING - DISABLED - Code removed for cleaner build */}
 
                     {/* PRODUCTS */}
                     {hasPermission(PERMISSIONS.PRODUCTS_VIEW) && (
@@ -333,26 +275,8 @@ const InventoryMenu = ({ onOpenOperation }) => {
                             onToggle={() => setInventoryOpen(!inventoryOpen)}
                             basePath="/inventory"
                         >
-                             <Link 
-                                href="/inventory/store"
-                                className={cn(
-                                    "block rounded-md px-3 py-2 text-sm transition-colors",
-                                    pathname === "/inventory/store" ? "text-slate-900 font-medium bg-slate-50" : "text-slate-500 hover:text-slate-900"
-                                )}
-                            >
-                                Store Inventory
-                            </Link>
-                            {hasPermission(PERMISSIONS.INVENTORY_TRANSFER) && (
-                                <Link 
-                                    href="/inventory/selftransfer"
-                                    className={cn(
-                                        "block rounded-md px-3 py-2 text-sm transition-colors",
-                                        pathname === "/inventory/selftransfer" ? "text-slate-900 font-medium bg-slate-50" : "text-slate-500 hover:text-slate-900"
-                                    )}
-                                >
-                                    Self Transfer
-                                </Link>
-                            )}
+                            {/* STORE INVENTORY - DISABLED - Code removed for cleaner build */}
+                            {/* SELF TRANSFER - DISABLED - Code removed for cleaner build */}
                         </MenuItemWithSub>
                     )}
 
@@ -494,18 +418,20 @@ const InventoryMenu = ({ onOpenOperation }) => {
                         </MenuItemWithSub>
                     )}
 
-                    {/* PERMISSIONS MANAGEMENT */}
+                    {/* PERMISSIONS & ADMIN */}
                     {hasPermission(PERMISSIONS.SYSTEM_PERMISSIONS) && (
                         <SidebarMenuItem>
                             <Link 
-                                href="/permissions" 
-                                className={cn(sidebarMenuButtonVariants({ active: isPermissionsRoute, collapsed }))}
+                                href="/admin/permissions" 
+                                className={cn(sidebarMenuButtonVariants({ active: pathname === "/admin/permissions", collapsed }))}
                             >
-                                <Settings size={collapsed ? 20 : 18} />
-                                {!collapsed && <span>System Admin</span>}
+                                <Shield size={collapsed ? 20 : 18} />
+                                {!collapsed && <span>Permissions</span>}
                             </Link>
                         </SidebarMenuItem>
                     )}
+
+                    {/* ACCESS CONTROL - DISABLED - Code removed for cleaner build */}
 
                 </SidebarMenu>
             </SidebarContent>

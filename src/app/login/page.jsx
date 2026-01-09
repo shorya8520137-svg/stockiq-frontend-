@@ -1,66 +1,26 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import styles from "./login.module.css";
+
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
-    const [isTyping, setIsTyping] = useState(false);
-    const [showCredentials, setShowCredentials] = useState(false);
-    const [characterEmotion, setCharacterEmotion] = useState("happy"); // happy, typing, error, success, sleepy
-    const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+    const [activeTab, setActiveTab] = useState("login"); // "login" or "about"
     const { login, availableUsers } = useAuth();
     const router = useRouter();
-    const containerRef = useRef(null);
-    const typingTimeoutRef = useRef(null);
-
-    // Track mouse movement for character animation
-    useEffect(() => {
-        const handleMouseMove = (e) => {
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect();
-                const x = ((e.clientX - rect.left) / rect.width) * 100;
-                const y = ((e.clientY - rect.top) / rect.height) * 100;
-                setMousePosition({ x, y });
-            }
-        };
-
-        const container = containerRef.current;
-        if (container) {
-            container.addEventListener('mousemove', handleMouseMove);
-            return () => container.removeEventListener('mousemove', handleMouseMove);
-        }
-    }, []);
-
-    // Handle typing animation
-    const handleInputChange = (setter, value) => {
-        setter(value);
-        setIsTyping(true);
-        setCharacterEmotion("typing");
-        
-        // Clear existing timeout
-        if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-        }
-        
-        // Set timeout to stop typing animation
-        typingTimeoutRef.current = setTimeout(() => {
-            setIsTyping(false);
-            setCharacterEmotion("happy");
-        }, 1000);
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         setLoading(true);
-        setCharacterEmotion("loading");
 
         // Simulate loading delay for better UX
         await new Promise(resolve => setTimeout(resolve, 1500));
@@ -68,262 +28,192 @@ export default function LoginPage() {
         const result = login(email, password);
 
         if (result.success) {
-            setCharacterEmotion("success");
             setTimeout(() => {
-                router.push("/dashboard");
+                router.push("/products");
             }, 1000);
         } else {
-            setCharacterEmotion("error");
             setError(result.error || "Invalid credentials");
             setLoading(false);
-            
-            // Reset to happy after error animation
-            setTimeout(() => {
-                setCharacterEmotion("happy");
-            }, 3000);
         }
     };
 
-    // Auto-hide character emotion after some time
-    useEffect(() => {
-        if (characterEmotion === "error" || characterEmotion === "success") {
-            const timer = setTimeout(() => {
-                setCharacterEmotion("happy");
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [characterEmotion]);
+    const switchTab = (tab) => {
+        setActiveTab(tab);
+    };
 
     return (
-        <div className={styles.container} ref={containerRef}>
-            {/* Animated Background Elements */}
-            <div className={styles.backgroundShapes}>
-                <div className={styles.shape1}></div>
-                <div className={styles.shape2}></div>
-                <div className={styles.shape3}></div>
+        <div className={styles.container}>
+            {/* Background Image */}
+            <div className={styles.backgroundImage}>
+                <img src="/login.png" alt="Background" />
+                <div className={styles.overlay}></div>
             </div>
 
-            {/* Interactive Character Section */}
-            <div className={styles.characterSection}>
-                <div className={styles.characterContainer}>
-                    {/* Character Body */}
-                    <div className={`${styles.character} ${styles[characterEmotion]}`}>
-                        <div className={styles.characterHead}>
-                            {/* Eyes that follow mouse and show emotions */}
-                            <div 
-                                className={`${styles.characterEyes} ${styles[`eyes_${characterEmotion}`]}`}
-                                style={{
-                                    transform: isPasswordFocused 
-                                        ? 'translate(0px, 0px)' 
-                                        : `translate(${(mousePosition.x - 50) * 0.15}px, ${(mousePosition.y - 50) * 0.08}px)`
-                                }}
-                            >
-                                <div className={`${styles.eye} ${styles.leftEye}`}>
-                                    <div className={styles.pupil}></div>
-                                    <div className={styles.eyeShine}></div>
-                                </div>
-                                <div className={`${styles.eye} ${styles.rightEye}`}>
-                                    <div className={styles.pupil}></div>
-                                    <div className={styles.eyeShine}></div>
-                                </div>
-                            </div>
-                            
-                            {/* Eyebrows for expressions */}
-                            <div className={`${styles.eyebrows} ${styles[`eyebrows_${characterEmotion}`]}`}>
-                                <div className={styles.leftEyebrow}></div>
-                                <div className={styles.rightEyebrow}></div>
-                            </div>
-                            
-                            {/* Dynamic mouth based on emotion */}
-                            <div className={`${styles.characterMouth} ${styles[`mouth_${characterEmotion}`]}`}></div>
-                            
-                            {/* Blush for different emotions */}
-                            {(characterEmotion === "error" || characterEmotion === "typing") && (
-                                <div className={styles.blush}>
-                                    <div className={styles.leftBlush}></div>
-                                    <div className={styles.rightBlush}></div>
-                                </div>
-                            )}
-                        </div>
-                        
-                        <div className={styles.characterBody}>
-                            <div 
-                                className={`${styles.characterArm} ${styles.leftArm}`} 
-                                style={{
-                                    transform: `rotate(${(mousePosition.x - 50) * 0.3}deg)`
-                                }}
-                            ></div>
-                            <div 
-                                className={`${styles.characterArm} ${styles.rightArm}`} 
-                                style={{
-                                    transform: `rotate(${-(mousePosition.x - 50) * 0.3}deg)`
-                                }}
-                            ></div>
-                        </div>
-                    </div>
-
-                    {/* Activity Elements */}
-                    <div className={styles.activityElements}>
-                        <div className={styles.laptop}>
-                            <div className={styles.laptopScreen}>
-                                {isTyping && <div className={styles.typingIndicator}>...</div>}
-                            </div>
-                            <div className={styles.laptopKeyboard}></div>
-                        </div>
-                        <div className={styles.floatingIcons}>
-                            <div className={styles.icon}>📊</div>
-                            <div className={styles.icon}>📈</div>
-                            <div className={styles.icon}>💼</div>
-                        </div>
-                    </div>
-
-                    {/* Emotion particles */}
-                    {characterEmotion === "success" && (
-                        <div className={styles.successParticles}>
-                            <div className={styles.particle}>🎉</div>
-                            <div className={styles.particle}>✨</div>
-                            <div className={styles.particle}>🎊</div>
-                        </div>
-                    )}
-                    
-                    {characterEmotion === "error" && (
-                        <div className={styles.errorParticles}>
-                            <div className={styles.particle}>😵</div>
-                            <div className={styles.particle}>💫</div>
-                        </div>
-                    )}
-                </div>
-
-                <div className={styles.welcomeText}>
-                    <h2>Welcome to Your Workspace</h2>
-                    <p>Manage your business with ease</p>
-                </div>
+            {/* Navigation Tabs */}
+            <div className={styles.tabNavigation}>
+                <button 
+                    className={`${styles.tabBtn} ${activeTab === "login" ? styles.active : ""}`}
+                    onClick={() => switchTab("login")}
+                >
+                    Login
+                </button>
+                <button 
+                    className={`${styles.tabBtn} ${activeTab === "about" ? styles.active : ""}`}
+                    onClick={() => switchTab("about")}
+                >
+                    About Us
+                </button>
             </div>
 
-            {/* Login Form Section */}
-            <div className={styles.loginSection}>
-                <div className={styles.loginCard}>
-                    <div className={styles.header}>
-                        <div className={styles.logo}>
-                            <div className={styles.logoIcon}>A</div>
-                            <span className={styles.logoText}>Amigo Orders</span>
-                        </div>
-                        <h1 className={styles.title}>Welcome back</h1>
-                        <p className={styles.subtitle}>
-                            Login to your account
-                        </p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className={styles.form}>
-                        {error && (
-                            <div className={styles.errorMessage}>
-                                <span>⚠️</span>
-                                <span>{error}</span>
+            {/* Sliding Content Container */}
+            <div className={styles.contentContainer}>
+                {/* Login Panel */}
+                <div className={`${styles.panel} ${styles.loginPanel} ${activeTab === "login" ? styles.active : ""}`}>
+                    <div className={styles.loginContent}>
+                        {/* Left Section - Branding & Motivation */}
+                        <div className={styles.loginLeft}>
+                            <div className={styles.brandSection}>
+                                <div className={styles.logo}>
+                                    <div className={styles.logoIcon}>H</div>
+                                    <span className={styles.logoText}>
+                                        <span className={styles.hunyPink}>huny</span>
+                                        <span className={styles.hunyBlue}>huny</span>
+                                    </span>
+                                </div>
+                                <h1 className={styles.title}>Welcome Back</h1>
+                                <p className={styles.subtitle}>
+                                    Empowering your success, one login at a time
+                                </p>
+                                <div className={styles.motivationalQuote}>
+                                    "Excellence is not a skill, it's an attitude. Let's make today count!"
+                                </div>
                             </div>
-                        )}
-
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Email</label>
-                            <input
-                                type="email"
-                                className={styles.input}
-                                placeholder="m@example.com"
-                                value={email}
-                                onChange={(e) => handleInputChange(setEmail, e.target.value)}
-                                required
-                                autoFocus
-                                onFocus={() => {
-                                    setCharacterEmotion("typing");
-                                    setIsPasswordFocused(false);
-                                }}
-                                onBlur={() => {
-                                    setTimeout(() => setCharacterEmotion("happy"), 500);
-                                }}
-                            />
                         </div>
 
-                        <div className={styles.formGroup}>
-                            <div className={styles.labelRow}>
-                                <label className={styles.label}>Password</label>
-                                <a href="#" className={styles.forgotLink}>Forgot your password?</a>
-                            </div>
-                            <input
-                                type="password"
-                                className={styles.input}
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => handleInputChange(setPassword, e.target.value)}
-                                required
-                                onFocus={() => {
-                                    setCharacterEmotion("sleepy");
-                                    setIsPasswordFocused(true);
-                                }}
-                                onBlur={() => {
-                                    setIsPasswordFocused(false);
-                                    setTimeout(() => setCharacterEmotion("happy"), 500);
-                                }}
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className={`${styles.submitBtn} ${loading ? styles.loading : ""}`}
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <>
-                                    <div className={styles.spinner}></div>
-                                    Signing in...
-                                </>
-                            ) : (
-                                "Login"
+                        {/* Right Section - Login Form */}
+                        <div className={styles.loginRight}>
+                            <form onSubmit={handleSubmit} className={styles.form}>
+                            {error && (
+                                <div className={styles.errorMessage}>
+                                    <span>⚠️</span>
+                                    <span>{error}</span>
+                                </div>
                             )}
-                        </button>
 
-                        <div className={styles.footer}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Email Address</label>
+                                <input
+                                    type="email"
+                                    className={styles.input}
+                                    placeholder="Enter your email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <div className={styles.labelRow}>
+                                    <label className={styles.label}>Password</label>
+                                    <a href="#" className={styles.forgotLink}>Forgot password?</a>
+                                </div>
+                                <input
+                                    type="password"
+                                    className={styles.input}
+                                    placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+
                             <button
-                                type="button"
-                                className={styles.credentialsBtn}
-                                onClick={() => setShowCredentials(!showCredentials)}
+                                type="submit"
+                                className={`${styles.submitBtn} ${loading ? styles.loading : ""}`}
+                                disabled={loading}
                             >
-                                {showCredentials ? "Hide" : "Show"} Demo Credentials
+                                {loading ? (
+                                    <>
+                                        <div className={styles.spinner}></div>
+                                        Signing in...
+                                    </>
+                                ) : (
+                                    "Sign In"
+                                )}
                             </button>
-                            
-                            {showCredentials && (
-                                <div className={styles.credentialsPanel}>
-                                    <h4 className={styles.credentialsTitle}>Demo Users</h4>
-                                    <div className={styles.usersList}>
-                                        {availableUsers.map((user) => (
-                                            <div key={user.email} className={styles.userCard}>
-                                                <div className={styles.userInfo}>
-                                                    <strong>{user.name}</strong>
-                                                    <span className={styles.userRole}>{user.role.replace('_', ' ')}</span>
-                                                    <span className={styles.userEmail}>{user.email}</span>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    className={styles.selectUserBtn}
-                                                    onClick={() => {
-                                                        setEmail(user.email);
-                                                        setPassword(user.email.includes('admin') ? 'admin@123' : 
-                                                                   user.email.includes('manager') ? 'manager@123' :
-                                                                   user.email.includes('operator') ? 'operator@123' :
-                                                                   user.email.includes('warehouse') ? 'warehouse@123' : 'viewer@123');
-                                                        setCharacterEmotion("happy");
-                                                    }}
-                                                >
-                                                    Select
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className={styles.credentialsNote}>
-                                        <small>All passwords follow the pattern: [role]@123</small>
-                                    </div>
-                                </div>
-                            )}
+
+                            <div className={styles.footer}>
+                                {/* Demo credentials section removed */}
+                            </div>
+                        </form>
                         </div>
-                    </form>
+                    </div>
+                </div>
+
+                {/* About Us Panel */}
+                <div className={`${styles.panel} ${styles.aboutPanel} ${activeTab === "about" ? styles.active : ""}`}>
+                    <div className={styles.aboutContent}>
+                        <div className={styles.aboutHeader}>
+                            <h1 className={styles.aboutTitle}>About hunyhuny</h1>
+                            <p className={styles.aboutSubtitle}>
+                                Empowering teams to achieve extraordinary results through intelligent business solutions
+                            </p>
+                            <div className={styles.missionStatement}>
+                                "Your success is our mission. Together, we build the future of business excellence."
+                            </div>
+                        </div>
+
+                        <div className={styles.featuresGrid}>
+                            <div className={styles.feature}>
+                                <div className={styles.featureIcon}>🚀</div>
+                                <h3>Accelerate Growth</h3>
+                                <p>Transform your potential into performance. Our platform empowers your team to achieve breakthrough results and exceed every goal.</p>
+                            </div>
+                            
+                            <div className={styles.feature}>
+                                <div className={styles.featureIcon}>💡</div>
+                                <h3>Innovate Fearlessly</h3>
+                                <p>Break barriers and push boundaries. With cutting-edge tools at your fingertips, innovation becomes your competitive advantage.</p>
+                            </div>
+                            
+                            <div className={styles.feature}>
+                                <div className={styles.featureIcon}>🎯</div>
+                                <h3>Achieve Excellence</h3>
+                                <p>Excellence isn't an accident—it's a habit. Our platform helps you build systems that deliver consistent, outstanding results.</p>
+                            </div>
+                            
+                            <div className={styles.feature}>
+                                <div className={styles.featureIcon}>🌟</div>
+                                <h3>Inspire Success</h3>
+                                <p>Success is contagious. Create a culture of achievement where every team member thrives and contributes to collective greatness.</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.stats}>
+                            <div className={styles.stat}>
+                                <div className={styles.statNumber}>500K+</div>
+                                <div className={styles.statLabel}>Goals Achieved</div>
+                            </div>
+                            <div className={styles.stat}>
+                                <div className={styles.statNumber}>98%</div>
+                                <div className={styles.statLabel}>Success Rate</div>
+                            </div>
+                            <div className={styles.stat}>
+                                <div className={styles.statNumber}>24/7</div>
+                                <div className={styles.statLabel}>Team Support</div>
+                            </div>
+                        </div>
+
+                        <div className={styles.cta}>
+                            <button 
+                                className={styles.ctaBtn}
+                                onClick={() => switchTab("login")}
+                            >
+                                Start Your Success Journey
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
