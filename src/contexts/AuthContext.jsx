@@ -1,12 +1,24 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { PermissionsAPI } from "../services/permissionsApi";
+import { authAPI } from "../services/api/auth";
 
 const AuthContext = createContext(null);
 
 // Fallback users for development/demo (when API is not available)
 const FALLBACK_USERS = {
+    "admin@hunyhuny.com": {
+        password: "admin123",
+        role: "super_admin",
+        name: "Super Admin",
+        email: "admin@hunyhuny.com"
+    },
+    "test@hunyhuny.com": {
+        password: "admin123",
+        role: "super_admin",
+        name: "Test Admin",
+        email: "test@hunyhuny.com"
+    },
     "admin@example.com": {
         password: "admin@123",
         role: "super_admin",
@@ -82,7 +94,7 @@ export function AuthProvider({ children }) {
             // Try API login first
             if (apiAvailable) {
                 try {
-                    const response = await PermissionsAPI.login({ email, password });
+                    const response = await authAPI.login({ email, password });
                     
                     if (response.user && response.token) {
                         const userData = {
@@ -163,7 +175,7 @@ export function AuthProvider({ children }) {
         try {
             if (user && apiAvailable) {
                 try {
-                    await PermissionsAPI.logout();
+                    await authAPI.logout();
                 } catch (apiError) {
                     console.warn('API logout failed:', apiError);
                 }
