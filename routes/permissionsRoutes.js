@@ -16,7 +16,7 @@ const authenticateToken = (req, res, next) => {
     
     const jwt = require('jsonwebtoken');
     
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production', (err, user) => {
         if (err) {
             return res.status(403).json({
                 success: false,
@@ -64,17 +64,6 @@ const checkPermission = (requiredPermission) => {
     };
 };
 
-// ================= AUTHENTICATION ROUTES ================= //
-
-// POST /api/auth/login - User login
-router.post('/auth/login', PermissionsController.login);
-
-// POST /api/auth/logout - User logout
-router.post('/auth/logout', authenticateToken, PermissionsController.logout);
-
-// POST /api/auth/refresh - Refresh JWT token
-router.post('/auth/refresh', PermissionsController.refreshToken);
-
 // ================= USER MANAGEMENT ROUTES ================= //
 
 // GET /api/users - Get all users
@@ -88,7 +77,39 @@ router.get('/users',
 router.get('/users/:userId', 
     authenticateToken, 
     checkPermission('SYSTEM_USER_MANAGEMENT'), 
-    PermissionsController.getUserById
+    async (req, res) => {
+        try {
+            const { userId } = req.params;
+            const db = require('../db/connection');
+            
+            const [users] = await db.execute(`
+                SELECT u.id, u.name, u.email, u.status, u.last_login, u.created_at,
+                       r.name as role_name, r.display_name as role_display_name, r.color as role_color
+                FROM users u
+                LEFT JOIN roles r ON u.role_id = r.id
+                WHERE u.id = ?
+            `, [userId]);
+            
+            if (users.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+            
+            res.json({
+                success: true,
+                data: users[0]
+            });
+            
+        } catch (error) {
+            console.error('Get user error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch user'
+            });
+        }
+    }
 );
 
 // POST /api/users - Create new user
