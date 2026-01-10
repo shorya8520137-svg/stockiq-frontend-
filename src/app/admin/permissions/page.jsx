@@ -222,8 +222,21 @@ const PermissionsPage = () => {
                 return;
             }
 
+            // Debug: Check if we have a token
+            const token = localStorage.getItem('authToken');
+            console.log('🔑 Token available:', !!token);
+            console.log('🔑 Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
+
             // Use real API instead of mock
             const { authAPI } = await import('@/services/api/auth');
+            
+            console.log('📤 Creating user with data:', {
+                name: userForm.name,
+                email: userForm.email,
+                role_id: userForm.role,
+                status: userForm.status
+            });
+
             const response = await authAPI.createUser({
                 name: userForm.name,
                 email: userForm.email,
@@ -231,6 +244,8 @@ const PermissionsPage = () => {
                 role_id: userForm.role, // Map role to role_id
                 status: userForm.status
             });
+
+            console.log('📥 API Response:', response);
 
             if (response.success) {
                 // Reload users from backend
@@ -246,7 +261,11 @@ const PermissionsPage = () => {
                 throw new Error(response.message || 'Failed to create user');
             }
         } catch (error) {
-            console.error('Failed to create user:', error);
+            console.error('❌ Failed to create user:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
             showNotification('Failed to create user: ' + error.message, 'error');
         }
     };

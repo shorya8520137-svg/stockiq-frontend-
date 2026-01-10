@@ -211,6 +211,13 @@ export const authAPI = {
     async makeAuthenticatedRequest(endpoint, options = {}) {
         const token = this.getToken();
         
+        // Debug logging
+        console.log('🔐 makeAuthenticatedRequest called:', {
+            endpoint,
+            hasToken: !!token,
+            tokenPreview: token ? token.substring(0, 20) + '...' : 'No token'
+        });
+        
         const requestOptions = {
             ...options,
             headers: {
@@ -220,18 +227,31 @@ export const authAPI = {
             }
         };
         
+        console.log('📡 Request options:', {
+            method: requestOptions.method || 'GET',
+            url: endpoint,
+            hasAuthHeader: !!requestOptions.headers.Authorization
+        });
+        
         try {
-            return await apiRequest(endpoint, requestOptions);
+            const result = await apiRequest(endpoint, requestOptions);
+            console.log('✅ Request successful:', result);
+            return result;
         } catch (error) {
+            console.error('❌ Request failed:', error);
+            
             // Handle token expiration
             if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+                console.log('🔄 Attempting token refresh...');
                 try {
                     await this.refreshToken();
                     // Retry with new token
                     const newToken = this.getToken();
                     requestOptions.headers.Authorization = `Bearer ${newToken}`;
+                    console.log('🔄 Retrying with new token...');
                     return await apiRequest(endpoint, requestOptions);
                 } catch (refreshError) {
+                    console.error('❌ Token refresh failed:', refreshError);
                     // Refresh failed, redirect to login
                     this.clearAuth();
                     if (typeof window !== 'undefined') {
