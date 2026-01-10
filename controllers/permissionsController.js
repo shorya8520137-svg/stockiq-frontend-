@@ -6,15 +6,13 @@ class PermissionsController {
     
     static async getUsers(req, res) {
         try {
-            const result = await db.execute(`
+            const [users] = await db.execute(`
                 SELECT u.id, u.name, u.email, u.status, u.last_login, u.created_at,
                        r.name as role_name, r.display_name as role_display_name, r.color as role_color
                 FROM users u
                 LEFT JOIN roles r ON u.role_id = r.id
                 ORDER BY u.created_at DESC
             `);
-            
-            const users = Array.isArray(result) ? result[0] : result;
             
             res.json({
                 success: true,
@@ -47,8 +45,7 @@ class PermissionsController {
             
             // Check if email already exists - FIXED MySQL2 format
             console.log('🔍 Checking if email exists:', email);
-            const existingUsersResult = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
-            const existingUsers = Array.isArray(existingUsersResult) ? existingUsersResult[0] : existingUsersResult;
+            const [existingUsers] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
             console.log('📊 Existing users check result:', existingUsers);
             
             if (existingUsers && existingUsers.length > 0) {
@@ -69,26 +66,14 @@ class PermissionsController {
             console.log('📊 SQL Query: INSERT INTO users (name, email, password_hash, role_id, status) VALUES (?, ?, ?, ?, ?)');
             console.log('📊 SQL Params:', [name, email, '[HIDDEN]', role_id, 'active']);
             
-            const insertResult = await db.execute(`
+            const [insertResult] = await db.execute(`
                 INSERT INTO users (name, email, password_hash, role_id, status)
                 VALUES (?, ?, ?, ?, 'active')
             `, [name, email, hashedPassword, role_id]);
             
             console.log('📊 Raw insert result:', insertResult);
             
-            // Handle different MySQL2 result formats
-            let userId;
-            if (Array.isArray(insertResult)) {
-                // Format: [ResultSetHeader, FieldPacket[]]
-                userId = insertResult[0].insertId;
-            } else if (insertResult.insertId) {
-                // Format: ResultSetHeader
-                userId = insertResult.insertId;
-            } else {
-                console.error('❌ Unexpected result format:', insertResult);
-                throw new Error('Failed to get user ID after insert - unexpected result format');
-            }
-            
+            const userId = insertResult.insertId;
             console.log('🆔 New user ID:', userId);
             
             if (!userId) {
@@ -97,8 +82,7 @@ class PermissionsController {
             
             // Verify the insert worked - FIXED MySQL2 format
             console.log('🔍 Verifying user was created...');
-            const verifyUserResult = await db.execute('SELECT id, name, email, role_id FROM users WHERE id = ?', [userId]);
-            const verifyUser = Array.isArray(verifyUserResult) ? verifyUserResult[0] : verifyUserResult;
+            const [verifyUser] = await db.execute('SELECT id, name, email, role_id FROM users WHERE id = ?', [userId]);
             console.log('✅ Verification result:', verifyUser);
             
             if (!verifyUser || verifyUser.length === 0) {
@@ -190,7 +174,7 @@ class PermissionsController {
     
     static async getRoles(req, res) {
         try {
-            const result = await db.execute(`
+            const [roles] = await db.execute(`
                 SELECT r.*, COUNT(u.id) as user_count
                 FROM roles r
                 LEFT JOIN users u ON r.id = u.role_id
@@ -198,8 +182,6 @@ class PermissionsController {
                 GROUP BY r.id
                 ORDER BY r.name
             `);
-            
-            const roles = Array.isArray(result) ? result[0] : result;
             
             res.json({
                 success: true,
@@ -219,13 +201,11 @@ class PermissionsController {
     
     static async getPermissions(req, res) {
         try {
-            const result = await db.execute(`
+            const [permissions] = await db.execute(`
                 SELECT * FROM permissions 
                 WHERE is_active = true 
                 ORDER BY category, name
             `);
-            
-            const permissions = Array.isArray(result) ? result[0] : result;
             
             res.json({
                 success: true,
@@ -248,15 +228,13 @@ class PermissionsController {
             const { page = 1, limit = 50 } = req.query;
             const offset = (page - 1) * limit;
             
-            const result = await db.execute(`
+            const [logs] = await db.execute(`
                 SELECT al.*, u.name as user_name, u.email as user_email
                 FROM audit_log al
                 LEFT JOIN users u ON al.user_id = u.id
                 ORDER BY al.created_at DESC
                 LIMIT ? OFFSET ?
             `, [parseInt(limit), parseInt(offset)]);
-            
-            const logs = Array.isArray(result) ? result[0] : result;
             
             res.json({
                 success: true,
@@ -307,14 +285,12 @@ class PermissionsController {
     
     static async getSystemStats(req, res) {
         try {
-            const result = await db.execute(`
+            const [stats] = await db.execute(`
                 SELECT 
                     COUNT(*) as total_users,
                     COUNT(CASE WHEN status = 'active' THEN 1 END) as active_users
                 FROM users
             `);
-            
-            const stats = Array.isArray(result) ? result[0] : result;
             
             res.json({
                 success: true,

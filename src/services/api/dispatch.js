@@ -3,7 +3,7 @@
  * Handles warehouse dispatch operations
  */
 
-import { API_CONFIG } from './config';
+import { API_CONFIG } from './config.js';
 
 const API_BASE = API_CONFIG.BASE_URL;
 

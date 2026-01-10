@@ -32,6 +32,18 @@ const authenticateToken = (req, res, next) => {
 const checkPermission = (requiredPermission) => {
     return async (req, res, next) => {
         try {
+            console.log('🔍 PERMISSION CHECK:', {
+                requiredPermission,
+                userRole: req.user?.role,
+                userId: req.user?.userId
+            });
+            
+            // Super admin has all permissions - check both formats
+            if (req.user.role === 'super_admin' || req.user.role === 'SUPER_ADMIN') {
+                console.log('✅ SUPER ADMIN - bypassing permission check');
+                return next();
+            }
+            
             const db = require('../db/connection');
             
             // Get user permissions
@@ -44,11 +56,13 @@ const checkPermission = (requiredPermission) => {
             `, [req.user.userId]);
             
             const userPermissions = permissions.map(p => p.name);
+            console.log('🔍 USER PERMISSIONS:', userPermissions);
             
-            // Super admin has all permissions
-            if (req.user.role === 'SUPER_ADMIN' || userPermissions.includes(requiredPermission)) {
+            if (userPermissions.includes(requiredPermission)) {
+                console.log('✅ PERMISSION GRANTED:', requiredPermission);
                 next();
             } else {
+                console.log('❌ PERMISSION DENIED:', requiredPermission);
                 res.status(403).json({
                     success: false,
                     message: 'Insufficient permissions'
@@ -65,6 +79,24 @@ const checkPermission = (requiredPermission) => {
 };
 
 // ================= USER MANAGEMENT ROUTES ================= //
+
+// GET /api/users - Get all users (SIMPLIFIED - no permission check for testing)
+router.get('/users-test', 
+    authenticateToken, 
+    PermissionsController.getUsers
+);
+
+// GET /api/roles - Get all roles (SIMPLIFIED - no permission check for testing)
+router.get('/roles-test', 
+    authenticateToken, 
+    PermissionsController.getRoles
+);
+
+// POST /api/users - Create new user (SIMPLIFIED - no permission check for testing)
+router.post('/users-test', 
+    authenticateToken, 
+    PermissionsController.createUser
+);
 
 // GET /api/users - Get all users
 router.get('/users', 

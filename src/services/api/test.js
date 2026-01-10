@@ -1,5 +1,5 @@
 // API Test Utilities
-import { checkAPIHealth, API_CONFIG } from './config';
+import { checkAPIHealth, API_CONFIG } from './config.js';
 import { bulkUploadAPI } from './bulkUpload';
 
 export const apiTests = {

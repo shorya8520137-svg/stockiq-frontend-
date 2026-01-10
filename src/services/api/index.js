@@ -1,5 +1,5 @@
 // Central API configuration and exports
-export { API_CONFIG, apiRequest, checkAPIHealth } from './config';
+export { API_CONFIG, apiRequest, checkAPIHealth } from './config.js';
 
 // Export all API services
 export * as auth from './auth.js';

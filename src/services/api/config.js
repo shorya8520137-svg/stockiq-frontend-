@@ -1,6 +1,6 @@
 // Central API configuration
-export const API_CONFIG = {
-    BASE_URL: 'https://13-201-222-24.nip.io/api', // Updated API endpoint
+const API_CONFIG = {
+    BASE_URL: 'https://13-201-222-24.nip.io/api',
     TIMEOUT: 30000,
     HEADERS: {
         'Content-Type': 'application/json',
@@ -8,7 +8,7 @@ export const API_CONFIG = {
 };
 
 // Base API function with error handling
-export async function apiRequest(endpoint, options = {}) {
+async function apiRequest(endpoint, options = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
 
@@ -39,7 +39,7 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 // Health check
-export async function checkAPIHealth() {
+async function checkAPIHealth() {
     try {
         const response = await apiRequest('/health');
         return { success: true, data: response };
@@ -47,3 +47,5 @@ export async function checkAPIHealth() {
         return { success: false, error: error.message };
     }
 }
+
+export { API_CONFIG, apiRequest, checkAPIHealth };

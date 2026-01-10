@@ -1,4 +1,4 @@
-import { apiRequest } from './index';
+import { apiRequest } from './config.js';
 
 export const ordersAPI = {
     /**

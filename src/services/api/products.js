@@ -1,4 +1,4 @@
-import { apiRequest, API_CONFIG } from './config';
+import { apiRequest, API_CONFIG } from './config.js';
 
 export const productsAPI = {
     /**
