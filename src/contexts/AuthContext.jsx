@@ -5,51 +5,7 @@ import { authAPI } from "../services/api/auth";
 
 const AuthContext = createContext(null);
 
-// Fallback users for development/demo (when API is not available)
-const FALLBACK_USERS = {
-    "admin@hunyhuny.com": {
-        password: "admin123",
-        role: "super_admin",
-        name: "Super Admin",
-        email: "admin@hunyhuny.com"
-    },
-    "test@hunyhuny.com": {
-        password: "admin123",
-        role: "super_admin",
-        name: "Test Admin",
-        email: "test@hunyhuny.com"
-    },
-    "admin@example.com": {
-        password: "admin@123",
-        role: "super_admin",
-        name: "Super Admin",
-        email: "admin@example.com"
-    },
-    "manager@example.com": {
-        password: "manager@123",
-        role: "manager",
-        name: "Manager User",
-        email: "manager@example.com"
-    },
-    "operator@example.com": {
-        password: "operator@123",
-        role: "operator",
-        name: "Operator User",
-        email: "operator@example.com"
-    },
-    "warehouse@example.com": {
-        password: "warehouse@123",
-        role: "warehouse_staff",
-        name: "Warehouse Staff",
-        email: "warehouse@example.com"
-    },
-    "viewer@example.com": {
-        password: "viewer@123",
-        role: "viewer",
-        name: "Viewer User",
-        email: "viewer@example.com"
-    }
-};
+// No fallback users - force real database authentication only
 
 // Legacy support for existing users
 const LEGACY_ROLE_MAPPING = {
@@ -91,110 +47,34 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         try {
-            // Try API login first
-            if (apiAvailable) {
-                try {
-                    const response = await authAPI.login({ email, password });
-                    
-                    if (response.user && response.token) {
-                        const userData = {
-                            ...response.user,
-                            role: LEGACY_ROLE_MAPPING[response.user.role] || response.user.role,
-                            loginTime: new Date().toISOString()
-                        };
-                        
-                        setUser(userData);
-                        localStorage.setItem("user", JSON.stringify(userData));
-                        
-                        return { success: true, user: userData };
-                    }
-                } catch (apiError) {
-                    console.warn('API login failed, falling back to local auth:', apiError);
-                    setApiAvailable(false);
-                }
-            }
+            // Only use real API - no fallback authentication
+            const response = await authAPI.login({ email, password });
             
-            // Fallback to local authentication
-            const userCredentials = FALLBACK_USERS[email.toLowerCase()];
-            
-            if (userCredentials && userCredentials.password === password) {
+            if (response.user && response.token) {
                 const userData = {
-                    email: userCredentials.email,
-                    role: LEGACY_ROLE_MAPPING[userCredentials.role] || userCredentials.role,
-                    name: userCredentials.name,
+                    ...response.user,
+                    role: LEGACY_ROLE_MAPPING[response.user.role] || response.user.role,
                     loginTime: new Date().toISOString()
                 };
                 
                 setUser(userData);
                 localStorage.setItem("user", JSON.stringify(userData));
                 
-                // Log the login action locally if API is not available
-                if (!apiAvailable) {
-                    const loginLog = {
-                        timestamp: new Date().toISOString(),
-                        user: userData.email,
-                        role: userData.role,
-                        action: 'LOGIN',
-                        resource: 'AUTH',
-                        details: { success: true, source: 'local' }
-                    };
-                    
-                    const auditLog = JSON.parse(localStorage.getItem('auditLog') || '[]');
-                    auditLog.push(loginLog);
-                    localStorage.setItem('auditLog', JSON.stringify(auditLog));
-                }
-                
                 return { success: true, user: userData };
-            }
-            
-            // Log failed login attempt
-            const failedLoginLog = {
-                timestamp: new Date().toISOString(),
-                user: email,
-                role: 'unknown',
-                action: 'LOGIN_FAILED',
-                resource: 'AUTH',
-                details: { success: false, reason: 'Invalid credentials', source: apiAvailable ? 'api' : 'local' }
-            };
-            
-            if (!apiAvailable) {
-                const auditLog = JSON.parse(localStorage.getItem('auditLog') || '[]');
-                auditLog.push(failedLoginLog);
-                localStorage.setItem('auditLog', JSON.stringify(auditLog));
             }
             
             return { success: false, error: "Invalid credentials" };
             
         } catch (error) {
             console.error('Login error:', error);
-            return { success: false, error: "Login failed. Please try again." };
+            return { success: false, error: error.message || "Login failed. Please try again." };
         }
     };
 
     const logout = async () => {
         try {
-            if (user && apiAvailable) {
-                try {
-                    await authAPI.logout();
-                } catch (apiError) {
-                    console.warn('API logout failed:', apiError);
-                }
-            }
-            
-            if (user && !apiAvailable) {
-                // Log the logout action locally
-                const logoutLog = {
-                    timestamp: new Date().toISOString(),
-                    user: user.email,
-                    role: user.role,
-                    action: 'LOGOUT',
-                    resource: 'AUTH',
-                    details: { success: true, source: 'local' }
-                };
-                
-                const auditLog = JSON.parse(localStorage.getItem('auditLog') || '[]');
-                auditLog.push(logoutLog);
-                localStorage.setItem('auditLog', JSON.stringify(auditLog));
+            if (user) {
+                await authAPI.logout();
             }
             
             setUser(null);
@@ -252,12 +132,7 @@ export function AuthProvider({ children }) {
                 loading, 
                 hasPermission, 
                 switchRole,
-                apiAvailable,
-                availableUsers: Object.keys(FALLBACK_USERS).map(email => ({
-                    email,
-                    role: FALLBACK_USERS[email].role,
-                    name: FALLBACK_USERS[email].name
-                }))
+                apiAvailable: true // Always true since we only use real API
             }}
         >
             {children}
