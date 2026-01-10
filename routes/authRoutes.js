@@ -31,7 +31,10 @@ const authenticateToken = (req, res, next) => {
 // ================= AUTHENTICATION ROUTES ================= //
 
 // POST /api/auth/login - User login
-router.post('/login', AuthController.login);
+router.post('/login', (req, res) => {
+    console.log('🔥 LOGIN ROUTE HIT!', req.body);
+    AuthController.login(req, res);
+});
 
 // POST /api/auth/logout - User logout
 router.post('/logout', authenticateToken, AuthController.logout);
@@ -97,11 +100,6 @@ router.put('/profile', authenticateToken, async (req, res) => {
             WHERE id = ?
         `, [name, email, req.user.userId]);
         
-        // Log audit
-        await AuthController.createAuditLog(req.user.userId, 'UPDATE_PROFILE', 'USER', req.user.userId, {
-            name, email
-        });
-        
         res.json({
             success: true,
             message: 'Profile updated successfully'
@@ -150,9 +148,6 @@ router.post('/change-password', authenticateToken, async (req, res) => {
             UPDATE users SET password_hash = ?, updated_at = NOW()
             WHERE id = ?
         `, [hashedPassword, req.user.userId]);
-        
-        // Log audit
-        await AuthController.createAuditLog(req.user.userId, 'CHANGE_PASSWORD', 'USER', req.user.userId, {});
         
         res.json({
             success: true,
