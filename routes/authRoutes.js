@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const PermissionsController = require('../controllers/permissionsController');
+const AuthController = require('../controllers/authController');
 
 // Middleware for authentication
 const authenticateToken = (req, res, next) => {
@@ -31,13 +31,13 @@ const authenticateToken = (req, res, next) => {
 // ================= AUTHENTICATION ROUTES ================= //
 
 // POST /api/auth/login - User login
-router.post('/login', PermissionsController.login);
+router.post('/login', AuthController.login);
 
 // POST /api/auth/logout - User logout
-router.post('/logout', authenticateToken, PermissionsController.logout);
+router.post('/logout', authenticateToken, AuthController.logout);
 
 // POST /api/auth/refresh - Refresh JWT token
-router.post('/refresh', PermissionsController.refreshToken);
+router.post('/refresh', AuthController.refreshToken);
 
 // GET /api/auth/profile - Get user profile
 router.get('/profile', authenticateToken, async (req, res) => {
@@ -98,7 +98,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
         `, [name, email, req.user.userId]);
         
         // Log audit
-        await PermissionsController.createAuditLog(req.user.userId, 'UPDATE_PROFILE', 'USER', req.user.userId, {
+        await AuthController.createAuditLog(req.user.userId, 'UPDATE_PROFILE', 'USER', req.user.userId, {
             name, email
         });
         
@@ -152,7 +152,7 @@ router.post('/change-password', authenticateToken, async (req, res) => {
         `, [hashedPassword, req.user.userId]);
         
         // Log audit
-        await PermissionsController.createAuditLog(req.user.userId, 'CHANGE_PASSWORD', 'USER', req.user.userId, {});
+        await AuthController.createAuditLog(req.user.userId, 'CHANGE_PASSWORD', 'USER', req.user.userId, {});
         
         res.json({
             success: true,
