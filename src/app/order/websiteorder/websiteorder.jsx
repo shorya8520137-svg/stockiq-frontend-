@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import styles from "./websiteorder.module.css";
 import { Download } from "lucide-react";
 import * as XLSX from "xlsx";
-import { API_CONFIG } from '@/services/api';
+import { API_CONFIG } from '@/services/api/config';
 
 const API = `${API_CONFIG.BASE_URL}/website/orders`;
 const ROWS_PER_PAGE = 6;

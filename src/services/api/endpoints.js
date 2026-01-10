@@ -1,7 +1,7 @@
 // API Endpoints Configuration
 // This file documents all the API endpoints used in the application
 
-import { API_CONFIG } from './index';
+import { API_CONFIG } from './config';
 
 export const ENDPOINTS = {
     // Base API URL

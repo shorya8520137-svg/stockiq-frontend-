@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { testConnection } from '../utils/api';
 import { PermissionsAPI } from '../services/permissionsApi';
-import { API_CONFIG } from '@/services/api';
+import { API_CONFIG } from '@/services/api/config';
 
 export default function ConnectionTest() {
     const [connectionStatus, setConnectionStatus] = useState('testing');

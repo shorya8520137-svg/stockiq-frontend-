@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createDispatchNotification } from '@/services/notificationService';
 
 /* ✅ UPDATED API ENDPOINTS */
-import { API_CONFIG } from '@/services/api';
+import { API_CONFIG } from '@/services/api/config';
 const API = `${API_CONFIG.BASE_URL}/dispatch`;
 const CREATE_API = `${API_CONFIG.BASE_URL}/dispatch`;
 

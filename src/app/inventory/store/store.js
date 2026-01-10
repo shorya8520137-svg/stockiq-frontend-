@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import styles from './store.module.css';
-import { API_CONFIG } from '@/services/api';
+import { API_CONFIG } from '@/services/api/config';
 
 const STORES_API = `${API_CONFIG.BASE_URL}/store-inventory/stores`;
 const INVENTORY_API = `${API_CONFIG.BASE_URL}/store-inventory/store/inventory`;

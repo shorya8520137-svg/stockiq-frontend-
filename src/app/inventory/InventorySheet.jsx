@@ -5,7 +5,7 @@ import { Search, Filter, Download, Package, MapPin, BarChart3, Eye, RefreshCw, C
 import styles from "./inventory.module.css";
 import { getMockInventoryResponse } from "../../utils/mockInventoryData";
 import ProductTracker from "./ProductTracker";
-import { API_CONFIG } from '@/services/api';
+import { API_CONFIG } from '@/services/api/config';
 
 const PAGE_SIZE = 50; // Items to show per page in UI
 const API_LIMIT = 10000; // Fetch all data from API at once

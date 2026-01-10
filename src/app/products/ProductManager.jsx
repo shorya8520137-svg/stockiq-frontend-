@@ -6,7 +6,7 @@ import styles from './products.module.css';
 import TransferForm from './TransferForm';
 import { productsAPI } from '@/services/api/products';
 import { usePermissions, PERMISSIONS } from '@/contexts/PermissionsContext';
-import { API_CONFIG } from '@/services/api';
+import { API_CONFIG } from '@/services/api/config';
 
 const ProductManager = () => {
     const { hasPermission, logAction } = usePermissions();

@@ -1,4 +1,4 @@
-import { API_CONFIG } from './api';
+import { API_CONFIG } from './api/config';
 
 const API_BASE = API_CONFIG.BASE_URL;
 

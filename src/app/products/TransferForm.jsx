@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "../order/dispatch/dispatchForm.module.css";
 
-import { API_CONFIG } from '@/services/api';
+import { API_CONFIG } from '@/services/api/config';
 
 /* API ENDPOINTS */
 const API = `${API_CONFIG.BASE_URL}/dispatch`;

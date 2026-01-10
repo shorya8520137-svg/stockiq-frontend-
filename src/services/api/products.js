@@ -1,4 +1,4 @@
-import { apiRequest } from './index';
+import { apiRequest, API_CONFIG } from './config';
 
 export const productsAPI = {
     /**
