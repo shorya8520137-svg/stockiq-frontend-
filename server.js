@@ -26,6 +26,13 @@ require("./db/connection");
 // ===============================
 // ROUTES (FRONTEND COMPATIBLE)
 // ===============================
+
+// 🔥 AUTH ROUTES (ADDED)
+app.use("/api/auth", require("./routes/authRoutes"));
+
+// 🔥 PERMISSIONS ROUTES (ADDED) 
+app.use("/api", require("./routes/permissionsRoutes"));
+
 app.use("/api/dispatch", require("./routes/dispatchRoutes"));
 app.use("/api/dispatch-beta", require("./routes/dispatchRoutes")); // existing
 
@@ -53,9 +60,6 @@ app.use('/api/order-tracking', require('./routes/orderTrackingRoutes'));
 // self transfer routes
 app.use('/api/self-transfer', require('./routes/selfTransferRoutes'));
 
-// permissions routes
-app.use('/api', require('./routes/permissionsRoutes'));
-
 // ===============================
 // HEALTH CHECK
 // ===============================
@@ -64,6 +68,21 @@ app.get("/", (req, res) => {
         status: "OK",
         service: "Inventory Backend",
         timestamp: new Date().toISOString(),
+        endpoints: {
+            auth: "/api/auth/login",
+            users: "/api/users", 
+            products: "/api/products",
+            inventory: "/api/inventory"
+        }
+    });
+});
+
+app.get("/api", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        service: "Inventory API",
+        version: "1.0.0",
+        timestamp: new Date().toISOString()
     });
 });
 
