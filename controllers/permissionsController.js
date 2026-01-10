@@ -244,6 +244,27 @@ class PermissionsController {
         }
     }
     
+    // HTTP route handler for creating audit logs
+    static async createAuditLogRoute(req, res) {
+        try {
+            const { action, resource, resourceId, data } = req.body;
+            const userId = req.user?.userId;
+            
+            await PermissionsController.createAuditLog(userId, action, resource, resourceId, data);
+            
+            res.json({
+                success: true,
+                message: 'Audit log created successfully'
+            });
+        } catch (error) {
+            console.error('Create audit log route error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to create audit log'
+            });
+        }
+    }
+    
     // ================= SYSTEM STATS ================= //
     
     static async getSystemStats(req, res) {

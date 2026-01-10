@@ -281,10 +281,14 @@ export function PermissionsProvider({ children }) {
             if (apiAvailable) {
                 // Load from API
                 try {
-                    const [rolesData, permissionsData] = await Promise.all([
+                    const [rolesResponse, permissionsResponse] = await Promise.all([
                         PermissionsAPI.getRoles(),
                         PermissionsAPI.getPermissions()
                     ]);
+                    
+                    // Extract data from API responses
+                    const rolesData = rolesResponse?.data || rolesResponse || [];
+                    const permissionsData = permissionsResponse?.data || permissionsResponse || [];
                     
                     // Update roles and permissions from API
                     if (rolesData) setRoles(rolesData);
@@ -293,7 +297,8 @@ export function PermissionsProvider({ children }) {
                     // Get user's role permissions from API
                     const userRoleData = rolesData?.find(r => r.name === user.role);
                     if (userRoleData) {
-                        const rolePermissions = await PermissionsAPI.getRolePermissions(userRoleData.id);
+                        const rolePermissionsResponse = await PermissionsAPI.getRolePermissions(userRoleData.id);
+                        const rolePermissions = rolePermissionsResponse?.data || rolePermissionsResponse || [];
                         setUserRole(userRoleData);
                         setUserPermissions(rolePermissions?.map(p => p.name) || []);
                     }

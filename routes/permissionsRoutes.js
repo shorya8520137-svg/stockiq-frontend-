@@ -509,6 +509,12 @@ router.get('/audit-logs',
     PermissionsController.getAuditLogs
 );
 
+// POST /api/audit-logs - Create audit log
+router.post('/audit-logs', 
+    authenticateToken, 
+    PermissionsController.createAuditLogRoute
+);
+
 // GET /api/audit-logs/user/:userId - Get audit logs by user
 router.get('/audit-logs/user/:userId', 
     authenticateToken, 
