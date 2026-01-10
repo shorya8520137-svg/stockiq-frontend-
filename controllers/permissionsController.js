@@ -38,7 +38,11 @@ class PermissionsController {
         try {
             const { name, email, password, role_id } = req.body;
             
+            console.log('🔍 CREATE USER DEBUG:');
+            console.log('📥 Request data:', { name, email, role_id });
+            
             if (!name || !email || !password || !role_id) {
+                console.log('❌ Validation failed - missing fields');
                 return res.status(400).json({
                     success: false,
                     message: 'Name, email, password, and role are required'
@@ -46,20 +50,36 @@ class PermissionsController {
             }
             
             // Hash password
+            console.log('🔐 Hashing password...');
             const hashedPassword = await bcrypt.hash(password, 10);
+            console.log('✅ Password hashed successfully');
             
             // Create user
+            console.log('💾 Inserting user into database...');
+            console.log('📊 SQL Query: INSERT INTO users (name, email, password_hash, role_id, status) VALUES (?, ?, ?, ?, ?)');
+            console.log('📊 SQL Params:', [name, email, '[HIDDEN]', role_id, 'active']);
+            
             const result = await db.execute(`
                 INSERT INTO users (name, email, password_hash, role_id, status)
                 VALUES (?, ?, ?, ?, 'active')
             `, [name, email, hashedPassword, role_id]);
             
+            console.log('📊 Insert result:', result);
+            
             const userId = result.insertId || (Array.isArray(result) ? result[0].insertId : result.insertId);
+            console.log('🆔 New user ID:', userId);
+            
+            // Verify the insert worked
+            console.log('🔍 Verifying user was created...');
+            const [verifyUser] = await db.execute('SELECT id, name, email, role_id FROM users WHERE id = ?', [userId]);
+            console.log('✅ Verification result:', verifyUser);
             
             // Log audit
             await this.createAuditLog(req.user?.userId, 'CREATE_USER', 'USER', userId, {
                 name, email, role_id
             });
+            
+            console.log('✅ User created successfully with ID:', userId);
             
             res.json({
                 success: true,
@@ -68,10 +88,17 @@ class PermissionsController {
             });
             
         } catch (error) {
-            console.error('Create user error:', error);
+            console.error('❌ Create user error:', error);
+            console.error('❌ Error stack:', error.stack);
             
             if (error.code === 'ER_DUP_ENTRY') {
                 return res.status(400).json({
+                    success: false,
+                    message: 'Email already exists'
+                });
+            }
+            
+            res.status(500).json({
                     success: false,
                     message: 'Email already exists'
                 });
