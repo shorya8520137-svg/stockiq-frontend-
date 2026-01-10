@@ -5,12 +5,11 @@ const dbConfig = {
     host: 'inventory-db.cv2iey8a8hbk.ap-south-1.rds.amazonaws.com',
     user: 'admin',
     password: 'gfx998sd',
-    database: 'hunyhuny_auto_dispatch', // Fixed: Changed from 'inventory' to correct database name
+    database: 'hunyhuny_auto_dispatch',
     port: 3306,
-    acquireTimeout: 60000,
-    timeout: 60000,
-    // reconnect: true, // Removed: Invalid option for MySQL2
-    multipleStatements: true
+    multipleStatements: true,
+    connectionLimit: 10,
+    queueLimit: 0
 };
 
 // Create connection pool for better performance

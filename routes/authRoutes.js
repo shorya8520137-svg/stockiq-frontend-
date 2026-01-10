@@ -31,16 +31,47 @@ const authenticateToken = (req, res, next) => {
 // ================= AUTHENTICATION ROUTES ================= //
 
 // POST /api/auth/login - User login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     console.log('🔥 LOGIN ROUTE HIT!', req.body);
-    AuthController.login(req, res);
+    try {
+        const AuthController = require('../controllers/authController');
+        await AuthController.login(req, res);
+    } catch (error) {
+        console.error('Login route error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Login failed'
+        });
+    }
 });
 
 // POST /api/auth/logout - User logout
-router.post('/logout', authenticateToken, AuthController.logout);
+router.post('/logout', authenticateToken, async (req, res) => {
+    try {
+        const AuthController = require('../controllers/authController');
+        await AuthController.logout(req, res);
+    } catch (error) {
+        console.error('Logout route error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Logout failed'
+        });
+    }
+});
 
 // POST /api/auth/refresh - Refresh JWT token
-router.post('/refresh', AuthController.refreshToken);
+router.post('/refresh', async (req, res) => {
+    try {
+        const AuthController = require('../controllers/authController');
+        await AuthController.refreshToken(req, res);
+    } catch (error) {
+        console.error('Refresh route error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Token refresh failed'
+        });
+    }
+});
 
 // GET /api/auth/profile - Get user profile
 router.get('/profile', authenticateToken, async (req, res) => {
