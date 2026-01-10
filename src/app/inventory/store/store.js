@@ -3,11 +3,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import styles from './store.module.css';
+import { API_CONFIG } from '@/services/api';
 
-const STORES_API =
-    'https://13-201-222-24.nip.io/api/store-inventory/stores';
-const INVENTORY_API =
-    'https://13-201-222-24.nip.io/api/store-inventory/store/inventory';
+const STORES_API = `${API_CONFIG.BASE_URL}/store-inventory/stores`;
+const INVENTORY_API = `${API_CONFIG.BASE_URL}/store-inventory/store/inventory`;
 
 export default function StoreInventory() {
     const [stores, setStores] = useState([]);

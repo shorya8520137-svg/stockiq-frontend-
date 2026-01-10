@@ -1,15 +1,17 @@
 // API Endpoints Configuration
 // This file documents all the API endpoints used in the application
 
+import { API_CONFIG } from './index';
+
 export const ENDPOINTS = {
     // Base API URL
-    BASE_URL: 'https://13-201-222-24.nip.io/api',
+    BASE_URL: API_CONFIG.BASE_URL,
     
     // Bulk Upload Endpoints
     BULK_UPLOAD: {
         // Main bulk upload endpoint (as requested)
         UPLOAD: 'POST /api/bulk-upload',
-        FULL_URL: 'https://13-201-222-24.nip.io/api/bulk-upload',
+        FULL_URL: API_CONFIG.BASE_URL + '/bulk-upload',
         
         // Supporting endpoints
         WAREHOUSES: 'GET /api/bulk-upload/warehouses',

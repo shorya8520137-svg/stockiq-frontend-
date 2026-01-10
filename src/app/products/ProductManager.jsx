@@ -6,6 +6,7 @@ import styles from './products.module.css';
 import TransferForm from './TransferForm';
 import { productsAPI } from '@/services/api/products';
 import { usePermissions, PERMISSIONS } from '@/contexts/PermissionsContext';
+import { API_CONFIG } from '@/services/api';
 
 const ProductManager = () => {
     const { hasPermission, logAction } = usePermissions();
@@ -90,7 +91,7 @@ const ProductManager = () => {
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch(
-                    `https://13-201-222-24.nip.io/api/products?search=${encodeURIComponent(query)}&limit=10`,
+                    `${API_CONFIG.BASE_URL}/products?search=${encodeURIComponent(query)}&limit=10`,
                     {
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -172,7 +173,7 @@ const ProductManager = () => {
                 category: selectedCategory
             });
 
-            const response = await fetch(`https://13-201-222-24.nip.io/api/products?${params}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/products?${params}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -203,7 +204,7 @@ const ProductManager = () => {
     const fetchCategories = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('https://13-201-222-24.nip.io/api/products/categories/all', {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/products/categories/all`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -300,8 +301,8 @@ const ProductManager = () => {
         try {
             const token = localStorage.getItem('token');
             const url = editingProduct
-                ? `https://13-201-222-24.nip.io/api/products/${editingProduct.p_id}`
-                : 'https://13-201-222-24.nip.io/api/products';
+                ? `${API_CONFIG.BASE_URL}/products/${editingProduct.p_id}`
+                : `${API_CONFIG.BASE_URL}/products`;
 
             const method = editingProduct ? 'PUT' : 'POST';
 
@@ -365,7 +366,7 @@ const ProductManager = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`https://13-201-222-24.nip.io/api/products/${productId}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/products/${productId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -486,7 +487,7 @@ const ProductManager = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('https://13-201-222-24.nip.io/api/products/categories', {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/products/categories`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -526,7 +527,7 @@ const ProductManager = () => {
     const handleScanBarcode = async (barcode) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`https://13-201-222-24.nip.io/api/products/inventory/${barcode}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/products/inventory/${barcode}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -562,7 +563,7 @@ const ProductManager = () => {
             
             // Fetch ALL products (no pagination limit)
             const response = await fetch(
-                `https://13-201-222-24.nip.io/api/products?limit=10000`,
+                `${API_CONFIG.BASE_URL}/products?limit=10000`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,

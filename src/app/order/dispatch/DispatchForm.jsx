@@ -6,8 +6,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createDispatchNotification } from '@/services/notificationService';
 
 /* ✅ UPDATED API ENDPOINTS */
-const API = "https://13-201-222-24.nip.io/api/dispatch";
-const CREATE_API = "https://13-201-222-24.nip.io/api/dispatch";
+import { API_CONFIG } from '@/services/api';
+const API = `${API_CONFIG.BASE_URL}/dispatch`;
+const CREATE_API = `${API_CONFIG.BASE_URL}/dispatch`;
 
 export default function DispatchForm() {
     const { logAction } = usePermissions();

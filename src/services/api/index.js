@@ -1,6 +1,6 @@
 // Central API configuration
 export const API_CONFIG = {
-    BASE_URL: 'https://13-201-222-24.nip.io/api', // Hardcoded for Vercel deployment
+    BASE_URL: 'https://13-201-222-24.nip.io/api', // Updated API endpoint
     TIMEOUT: 30000,
     HEADERS: {
         'Content-Type': 'application/json',

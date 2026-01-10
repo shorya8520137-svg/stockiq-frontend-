@@ -20,7 +20,7 @@ export const bulkUploadAPI = {
      * @returns {Promise} Upload result with success/failed counts
      */
     async uploadWithProgress(rows, onProgress) {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "https://13-201-222-24.nip.io/api";
+        const API_BASE_URL = API_CONFIG.BASE_URL;
         
         return new Promise((resolve, reject) => {
             const eventSource = new EventSource(`${API_BASE_URL}/bulk-upload/progress`, {

@@ -5,6 +5,7 @@ import { Search, Filter, Download, Package, MapPin, BarChart3, Eye, RefreshCw, C
 import styles from "./inventory.module.css";
 import { getMockInventoryResponse } from "../../utils/mockInventoryData";
 import ProductTracker from "./ProductTracker";
+import { API_CONFIG } from '@/services/api';
 
 const PAGE_SIZE = 50; // Items to show per page in UI
 const API_LIMIT = 10000; // Fetch all data from API at once
@@ -95,10 +96,10 @@ export default function InventorySheet() {
                 params.append('dateTo', dateTo);
             }
 
-            console.log('🔗 API URL:', `https://13-201-222-24.nip.io/api/inventory?${params}`);
+            console.log('🔗 API URL:', `${API_CONFIG.BASE_URL}/inventory?${params}`);
             console.log('🏢 Selected warehouses for API:', selectedWarehouses);
 
-            const response = await fetch(`https://13-201-222-24.nip.io/api/inventory?${params}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/inventory?${params}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -244,7 +245,7 @@ export default function InventorySheet() {
 
         if (query.length >= 2) {
             try {
-                const response = await fetch(`https://13-201-222-24.nip.io/api/products?search=${encodeURIComponent(query)}&limit=5`, {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/products?search=${encodeURIComponent(query)}&limit=5`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -414,9 +415,9 @@ export default function InventorySheet() {
             }
 
             console.log('🔍 Loading inventory for warehouse:', warehouseCode);
-            console.log('API URL:', `https://13-201-222-24.nip.io/api/inventory?${params}`);
+            console.log('API URL:', `${API_CONFIG.BASE_URL}/inventory?${params}`);
 
-            const response = await fetch(`https://13-201-222-24.nip.io/api/inventory?${params}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/inventory?${params}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -588,7 +589,7 @@ export default function InventorySheet() {
             console.log('🔽 Exporting with params:', params.toString());
             console.log('🏢 Export warehouses:', exportWarehouses.length === 0 ? 'All Warehouses' : exportWarehouses.join(', '));
 
-            const response = await fetch(`https://13-201-222-24.nip.io/api/inventory/export?${params}`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/inventory/export?${params}`, {
                 method: 'GET'
             });
 

@@ -3,7 +3,7 @@
 
 const axios = require('axios');
 
-const API_BASE = 'https://13-201-222-24.nip.io/api';
+const API_BASE = process.env.API_BASE || 'https://13-201-222-24.nip.io/api';
 
 async function testLogin() {
     console.log('🔐 Testing Login with Your Database...\n');

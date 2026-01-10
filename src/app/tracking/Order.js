@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { API_CONFIG } from '@/services/api';
 
 export default function Orders() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("https://13-201-222-24.nip.io/api/tracking/orders")
+        fetch(`${API_CONFIG.BASE_URL}/tracking/orders`)
             .then(res => {
                 if (!res.ok) throw new Error("API error");
                 return res.json();

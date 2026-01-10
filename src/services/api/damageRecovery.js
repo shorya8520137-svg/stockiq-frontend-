@@ -3,7 +3,9 @@
  * Handles damage reporting and stock recovery operations
  */
 
-const API_BASE = 'https://13-201-222-24.nip.io/api';
+import { API_CONFIG } from './index';
+
+const API_BASE = API_CONFIG.BASE_URL;
 
 /**
  * Report damage

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { testConnection } from '../utils/api';
 import { PermissionsAPI } from '../services/permissionsApi';
+import { API_CONFIG } from '@/services/api';
 
 export default function ConnectionTest() {
     const [connectionStatus, setConnectionStatus] = useState('testing');
@@ -68,7 +69,7 @@ export default function ConnectionTest() {
 
         // Test 3: CORS check
         try {
-            const corsTest = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'https://13-201-222-24.nip.io/api'}/health`, {
+            const corsTest = await fetch(`${API_CONFIG.BASE_URL}/health`, {
                 method: 'OPTIONS'
             });
             
@@ -171,7 +172,7 @@ export default function ConnectionTest() {
                              'Connection Failed'}
                         </div>
                         <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>
-                            API Endpoint: {process.env.NEXT_PUBLIC_API_BASE || 'https://13-201-222-24.nip.io/api'}
+                            API Endpoint: {API_CONFIG.BASE_URL}
                         </div>
                     </div>
                 </div>

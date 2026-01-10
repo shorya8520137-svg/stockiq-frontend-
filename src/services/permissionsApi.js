@@ -1,4 +1,6 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://13-201-222-24.nip.io/api';
+import { API_CONFIG } from './api';
+
+const API_BASE = API_CONFIG.BASE_URL;
 
 export class PermissionsAPI {
     // ================= AUTHENTICATION ================= //
