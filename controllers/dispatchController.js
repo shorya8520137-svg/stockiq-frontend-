@@ -10,7 +10,7 @@ const db = require('../db/connection');
 /**
  * CREATE NEW DISPATCH - Enhanced for frontend form
  */
-exports.createDispatch = (req, res) => {
+exports.createDispatch = async (req, res) => {
     // Handle both API formats (original and frontend form)
     const isFormData = req.body.selectedWarehouse !== undefined;
     
@@ -424,7 +424,7 @@ function extractProductName(productString) {
 /**
  * GET ALL DISPATCHES WITH FILTERS
  */
-exports.getDispatches = (req, res) => {
+exports.getDispatches = async (req, res) => {
     const {
         warehouse,
         status,
@@ -478,24 +478,14 @@ exports.getDispatches = (req, res) => {
     values.push(parseInt(limit), parseInt(offset));
 
     db.query(sql, values, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         // Get total count
         const countSql = `SELECT COUNT(*) as total FROM warehouse_dispatch ${whereClause}`;
         const countValues = values.slice(0, -2); // Remove limit and offset
 
         db.query(countSql, countValues, (err, countResult) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    error: err.message
-                });
-            }
+            
 
             const total = countResult[0].total;
 
@@ -516,7 +506,7 @@ exports.getDispatches = (req, res) => {
 /**
  * UPDATE DISPATCH STATUS
  */
-exports.updateDispatchStatus = (req, res) => {
+exports.updateDispatchStatus = async (req, res) => {
     const { id } = req.params;
     const { status, processed_by, remarks } = req.body;
 
@@ -534,12 +524,7 @@ exports.updateDispatchStatus = (req, res) => {
     `;
 
     db.query(sql, [status, processed_by, remarks, id], (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -558,7 +543,7 @@ exports.updateDispatchStatus = (req, res) => {
 /**
  * GET PRODUCT SUGGESTIONS FOR DISPATCH
  */
-exports.getProductSuggestions = (req, res) => {
+exports.getProductSuggestions = async (req, res) => {
     const { search, warehouse } = req.query;
 
     if (!search || search.length < 2) {
@@ -596,12 +581,7 @@ exports.getProductSuggestions = (req, res) => {
     `;
 
     db.query(sql, values, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         res.json({
             success: true,
@@ -676,7 +656,7 @@ exports.getProcessedPersons = async (req, res) => {
 /**
  * SEARCH PRODUCTS FOR DISPATCH
  */
-exports.searchProducts = (req, res) => {
+exports.searchProducts = async (req, res) => {
     const { query } = req.query;
 
     if (!query || query.length < 2) {
@@ -703,12 +683,7 @@ exports.searchProducts = (req, res) => {
     const searchTerm = `%${query}%`;
 
     db.query(sql, [searchTerm, searchTerm, searchTerm], (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         res.json(rows);
     });
@@ -717,7 +692,7 @@ exports.searchProducts = (req, res) => {
 /**
  * CHECK INVENTORY FOR DISPATCH
  */
-exports.checkInventory = (req, res) => {
+exports.checkInventory = async (req, res) => {
     const { warehouse, barcode, qty = 1 } = req.query;
 
     if (!warehouse || !barcode) {
@@ -736,12 +711,7 @@ exports.checkInventory = (req, res) => {
     `;
 
     db.query(sql, [barcode, warehouse], (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         const availableStock = rows[0]?.available_stock || 0;
         const isAvailable = availableStock >= quantity;
@@ -760,7 +730,7 @@ exports.checkInventory = (req, res) => {
 /**
  * GET PAYMENT MODES
  */
-exports.getPaymentModes = (req, res) => {
+exports.getPaymentModes = async (req, res) => {
     // Static payment modes - you can move this to database if needed
     const paymentModes = [
         'COD',
@@ -775,160 +745,16 @@ exports.getPaymentModes = (req, res) => {
     res.json(paymentModes);
 };
 
-/**
- * GET WAREHOUSES - For dropdown
- */
-exports.getWarehouses = (req, res) => {
-    const sql = `SELECT warehouse_code FROM dispatch_warehouse ORDER BY Warehouse_name`;
 
-    db.query(sql, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
-
-        const warehouses = rows.map(row => row.warehouse_code);
-        res.json(warehouses);
-    });
-};
-
-/**
- * GET LOGISTICS - For dropdown
- */
-exports.getLogistics = (req, res) => {
-    const sql = `SELECT name FROM logistics ORDER BY name`;
-
-    db.query(sql, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
-
-        const logistics = rows.map(row => row.name);
-        res.json(logistics);
-    });
-};
-
-/**
- * GET PROCESSED PERSONS - For dropdown
- */
-exports.getProcessedPersons = (req, res) => {
-    const sql = `SELECT name FROM processed_persons ORDER BY name`;
-
-    db.query(sql, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
-
-        const persons = rows.map(row => row.name);
-        res.json(persons);
-    });
-};
-
-/**
- * SEARCH PRODUCTS - For auto-suggestions
- */
-exports.searchProducts = (req, res) => {
-    const { query, q } = req.query;
-    const searchTerm = query || q; // Support both 'query' and 'q' parameters
-
-    if (!searchTerm || searchTerm.length < 2) {
-        return res.json([]);
-    }
-
-    const sql = `
-        SELECT p_id, product_name, product_variant, barcode
-        FROM dispatch_product 
-        WHERE is_active = 1 
-        AND (product_name LIKE ? OR barcode LIKE ? OR product_variant LIKE ?)
-        ORDER BY product_name
-        LIMIT 10
-    `;
-
-    const searchPattern = `%${searchTerm}%`;
-
-    db.query(sql, [searchPattern, searchPattern, searchPattern], (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
-
-        res.json(rows);
-    });
-};
-
-/**
- * CHECK INVENTORY - For stock validation
- */
-exports.checkInventory = (req, res) => {
-    const { warehouse, barcode, qty } = req.query;
-
-    if (!warehouse || !barcode) {
-        return res.status(400).json({
-            success: false,
-            message: 'warehouse and barcode are required'
-        });
-    }
-
-    const quantity = parseInt(qty) || 1;
-
-    const sql = `
-        SELECT SUM(qty_available) as available_stock 
-        FROM stock_batches 
-        WHERE barcode = ? AND warehouse = ? AND status = 'active'
-    `;
-
-    db.query(sql, [barcode, warehouse], (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
-
-        const availableStock = rows[0]?.available_stock || 0;
-        const isOk = availableStock >= quantity;
-
-        res.json({
-            ok: isOk,
-            available: availableStock,
-            requested: quantity,
-            message: isOk 
-                ? `Available: ${availableStock}` 
-                : `Insufficient stock. Available: ${availableStock}, Required: ${quantity}`
-        });
-    });
-};
-/**
- * GET PAYMENT MODES - For dropdown
- */
-exports.getPaymentModes = (req, res) => {
-    const paymentModes = ['COD', 'Prepaid', 'UPI', 'Credit Card', 'Debit Card', 'Net Banking'];
-    res.json(paymentModes);
-};
 /**
  * SETUP DISPATCH PRODUCTS - Populate from stock_batches if empty
  */
-exports.setupDispatchProducts = (req, res) => {
+exports.setupDispatchProducts = async (req, res) => {
     // First check if dispatch_product has data
     const checkSql = `SELECT COUNT(*) as count FROM dispatch_product WHERE is_active = 1`;
     
     db.query(checkSql, (err, result) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         const count = result[0].count;
         
@@ -1002,7 +828,7 @@ exports.setupDispatchProducts = (req, res) => {
 /**
  * HANDLE DAMAGE/RECOVERY OPERATIONS - Proper implementation with debugging
  */
-exports.handleDamageRecovery = (req, res) => {
+exports.handleDamageRecovery = async (req, res) => {
     console.log('🔧 Damage/Recovery request received:', req.body);
     
     const {
