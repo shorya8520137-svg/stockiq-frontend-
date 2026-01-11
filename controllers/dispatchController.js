@@ -613,73 +613,64 @@ exports.getProductSuggestions = (req, res) => {
 /**
  * GET WAREHOUSE SUGGESTIONS
  */
-exports.getWarehouses = (req, res) => {
-    const sql = `
-        SELECT warehouse_code as code, Warehouse_name as name
-        FROM dispatch_warehouse 
-        ORDER BY Warehouse_name
-    `;
-
-    db.query(sql, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
-
-        // Return just the warehouse codes for the dropdown
-        const warehouseCodes = rows.map(row => row.code);
-        res.json(warehouseCodes);
-    });
+exports.getWarehouses = async (req, res) => {
+    try {
+        const sql = `SELECT warehouse_code FROM dispatch_warehouse ORDER BY Warehouse_name`;
+        const [rows] = await db.execute(sql);
+        
+        res.json({
+            success: true,
+            data: rows
+        });
+    } catch (err) {
+        console.error('getWarehouses error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch warehouses'
+        });
+    }
 };
 
 /**
  * GET LOGISTICS SUGGESTIONS
  */
-exports.getLogistics = (req, res) => {
-    const sql = `
-        SELECT name
-        FROM logistics 
-        ORDER BY name
-    `;
-
-    db.query(sql, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
-
-        // Return just the logistics names for the dropdown
-        const logisticsNames = rows.map(row => row.name);
-        res.json(logisticsNames);
-    });
+exports.getLogistics = async (req, res) => {
+    try {
+        const sql = `SELECT name FROM logistics ORDER BY name`;
+        const [rows] = await db.execute(sql);
+        
+        res.json({
+            success: true,
+            data: rows
+        });
+    } catch (err) {
+        console.error('getLogistics error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch logistics'
+        });
+    }
 };
 
 /**
  * GET PROCESSED PERSONS SUGGESTIONS
  */
-exports.getProcessedPersons = (req, res) => {
-    const sql = `
-        SELECT name
-        FROM processed_persons 
-        ORDER BY name
-    `;
-
-    db.query(sql, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
-
-        // Return just the person names for the dropdown
-        const personNames = rows.map(row => row.name);
-        res.json(personNames);
-    });
+exports.getProcessedPersons = async (req, res) => {
+    try {
+        const sql = `SELECT name FROM processed_persons ORDER BY name`;
+        const [rows] = await db.execute(sql);
+        
+        res.json({
+            success: true,
+            data: rows
+        });
+    } catch (err) {
+        console.error('getProcessedPersons error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch processed persons'
+        });
+    }
 };
 
 /**

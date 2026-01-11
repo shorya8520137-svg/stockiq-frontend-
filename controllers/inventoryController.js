@@ -111,7 +111,7 @@ exports.addStock = (req, res) => {
  * GET INVENTORY (PAGINATION + DATE FILTER)
  * =====================================================
  */
-exports.getInventory = (req, res) => {
+exports.getInventory = async (req, res) => {
     const {
         warehouse,
         page = 1,
