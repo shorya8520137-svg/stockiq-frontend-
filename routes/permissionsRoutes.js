@@ -92,6 +92,33 @@ router.get('/roles-test',
     PermissionsController.getRoles
 );
 
+// GET /api/roles/available - Get available roles for user creation (no permission check)
+router.get('/roles/available', 
+    authenticateToken, 
+    async (req, res) => {
+        try {
+            const [roles] = await db.execute(`
+                SELECT id, name, display_name, description
+                FROM roles 
+                WHERE is_active = true 
+                ORDER BY id
+            `);
+            
+            res.json({
+                success: true,
+                data: roles,
+                message: 'Available roles for user creation'
+            });
+        } catch (error) {
+            console.error('Get available roles error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch available roles'
+            });
+        }
+    }
+);
+
 // POST /api/users - Create new user (SIMPLIFIED - no permission check for testing)
 router.post('/users-test', 
     authenticateToken, 

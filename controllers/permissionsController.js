@@ -43,6 +43,49 @@ class PermissionsController {
                 });
             }
             
+            // Convert role_id to number and validate
+            let numericRoleId;
+            if (typeof role_id === 'string') {
+                // Handle string role names - convert to IDs
+                const roleMap = {
+                    'super_admin': 1,
+                    'admin': 1,
+                    'manager': 2,
+                    'user': 2,
+                    'employee': 2
+                };
+                
+                if (roleMap[role_id.toLowerCase()]) {
+                    numericRoleId = roleMap[role_id.toLowerCase()];
+                    console.log(`🔄 Converted role '${role_id}' to ID: ${numericRoleId}`);
+                } else if (!isNaN(parseInt(role_id))) {
+                    numericRoleId = parseInt(role_id);
+                    console.log(`🔄 Parsed role_id '${role_id}' to number: ${numericRoleId}`);
+                } else {
+                    console.log('❌ Invalid role_id:', role_id);
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Invalid role_id. Use numeric ID (1, 2, etc.) or valid role name'
+                    });
+                }
+            } else {
+                numericRoleId = parseInt(role_id);
+            }
+            
+            // Validate that role exists
+            console.log('🔍 Validating role exists:', numericRoleId);
+            const [roleCheck] = await db.execute('SELECT id FROM roles WHERE id = ? AND is_active = true', [numericRoleId]);
+            
+            if (!roleCheck || roleCheck.length === 0) {
+                console.log('❌ Role not found:', numericRoleId);
+                return res.status(400).json({
+                    success: false,
+                    message: `Role ID ${numericRoleId} does not exist. Please use a valid role ID.`
+                });
+            }
+            
+            console.log('✅ Role validation passed:', numericRoleId);
+            
             // Check if email already exists - FIXED MySQL2 format
             console.log('🔍 Checking if email exists:', email);
             const [existingUsers] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
@@ -64,12 +107,12 @@ class PermissionsController {
             // Create user - FIXED MySQL2 format
             console.log('💾 Inserting user into database...');
             console.log('📊 SQL Query: INSERT INTO users (name, email, password_hash, role_id, status) VALUES (?, ?, ?, ?, ?)');
-            console.log('📊 SQL Params:', [name, email, '[HIDDEN]', role_id, 'active']);
+            console.log('📊 SQL Params:', [name, email, '[HIDDEN]', numericRoleId, 'active']);
             
             const [insertResult] = await db.execute(`
                 INSERT INTO users (name, email, password_hash, role_id, status)
                 VALUES (?, ?, ?, ?, 'active')
-            `, [name, email, hashedPassword, role_id]);
+            `, [name, email, hashedPassword, numericRoleId]);
             
             console.log('📊 Raw insert result:', insertResult);
             
@@ -91,7 +134,7 @@ class PermissionsController {
             
             // Log audit
             await PermissionsController.createAuditLog(req.user?.userId, 'CREATE_USER', 'USER', userId, {
-                name, email, role_id
+                name, email, role_id: numericRoleId
             });
             
             console.log('✅ User created successfully with ID:', userId);
@@ -110,6 +153,13 @@ class PermissionsController {
                 return res.status(400).json({
                     success: false,
                     message: 'Email already exists'
+                });
+            }
+            
+            if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid role_id. Please use a valid role ID that exists in the system.'
                 });
             }
             
