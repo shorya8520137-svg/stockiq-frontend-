@@ -19,6 +19,11 @@ class WebSocketService {
      * @returns {Promise} Connection promise
      */
     connect(token) {
+        // Only connect in browser environment
+        if (typeof window === 'undefined') {
+            return Promise.reject(new Error('WebSocket only available in browser'));
+        }
+        
         if (this.connectionPromise) {
             return this.connectionPromise;
         }

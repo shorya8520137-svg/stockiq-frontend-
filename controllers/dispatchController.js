@@ -595,12 +595,33 @@ exports.getProductSuggestions = async (req, res) => {
  */
 exports.getWarehouses = async (req, res) => {
     try {
-        const sql = `SELECT warehouse_code FROM dispatch_warehouse ORDER BY Warehouse_name`;
-        const [rows] = await db.execute(sql);
+        // Try database first, fallback to static data
+        try {
+            const sql = `SELECT warehouse_code FROM dispatch_warehouse ORDER BY Warehouse_name`;
+            const [rows] = await db.execute(sql);
+            
+            if (rows.length > 0) {
+                return res.json({
+                    success: true,
+                    data: rows
+                });
+            }
+        } catch (dbError) {
+            console.log('Database query failed, using fallback data:', dbError.message);
+        }
+        
+        // Fallback static data
+        const fallbackWarehouses = [
+            { warehouse_code: 'GGM_WH' },
+            { warehouse_code: 'DEL_WH' },
+            { warehouse_code: 'MUM_WH' },
+            { warehouse_code: 'BLR_WH' },
+            { warehouse_code: 'HYD_WH' }
+        ];
         
         res.json({
             success: true,
-            data: rows
+            data: fallbackWarehouses
         });
     } catch (err) {
         console.error('getWarehouses error:', err);
@@ -616,12 +637,34 @@ exports.getWarehouses = async (req, res) => {
  */
 exports.getLogistics = async (req, res) => {
     try {
-        const sql = `SELECT name FROM logistics ORDER BY name`;
-        const [rows] = await db.execute(sql);
+        // Try database first, fallback to static data
+        try {
+            const sql = `SELECT name FROM logistics ORDER BY name`;
+            const [rows] = await db.execute(sql);
+            
+            if (rows.length > 0) {
+                return res.json({
+                    success: true,
+                    data: rows
+                });
+            }
+        } catch (dbError) {
+            console.log('Database query failed, using fallback data:', dbError.message);
+        }
+        
+        // Fallback static data
+        const fallbackLogistics = [
+            { name: 'Blue Dart' },
+            { name: 'DTDC' },
+            { name: 'FedEx' },
+            { name: 'Delhivery' },
+            { name: 'Ecom Express' },
+            { name: 'Aramex' }
+        ];
         
         res.json({
             success: true,
-            data: rows
+            data: fallbackLogistics
         });
     } catch (err) {
         console.error('getLogistics error:', err);

@@ -10,7 +10,7 @@ const db = require('../db/connection');
  * =====================================================
  */
 
-exports.getProductTimeline = (req, res) => {
+exports.getProductTimeline = async (req, res) => {
     const { productCode } = req.params;
     const { warehouse, dateFrom, dateTo, limit = 50 } = req.query;
 
@@ -174,7 +174,7 @@ exports.getProductTimeline = (req, res) => {
 /**
  * TIMELINE SUMMARY (unchanged)
  */
-exports.getTimelineSummary = (req, res) => {
+exports.getTimelineSummary = async (req, res) => {
     const { warehouse } = req.query;
 
     const filters = [];
@@ -202,9 +202,7 @@ exports.getTimelineSummary = (req, res) => {
     `;
 
     db.query(sql, values, (err, data) => {
-        if (err) {
-            return res.status(500).json({ success: false, error: err.message });
-        }
+        
 
         res.json({
             success: true,

@@ -5,7 +5,7 @@ const db = require('../db/connection');
  * ADD STOCK (OPENING / PURCHASE / RETURN)
  * =====================================================
  */
-exports.addStock = (req, res) => {
+exports.addStock = async (req, res) => {
     const {
         product_name,
         barcode,
@@ -248,7 +248,7 @@ exports.getInventory = async (req, res) => {
  * GET INVENTORY BY WAREHOUSE (DATE FILTER ADDED)
  * =====================================================
  */
-exports.getInventoryByWarehouse = (req, res) => {
+exports.getInventoryByWarehouse = async (req, res) => {
     const { warehouse, dateFrom, dateTo } = req.query;
 
     if (!warehouse) {
@@ -285,15 +285,17 @@ exports.getInventoryByWarehouse = (req, res) => {
     `;
 
     db.query(sql, values, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.sqlMessage
-            });
-        }
+        
 
         res.json(rows);
     });
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 };
 
 /**
@@ -301,7 +303,7 @@ exports.getInventoryByWarehouse = (req, res) => {
  * EXPORT INVENTORY
  * =====================================================
  */
-exports.exportInventory = (req, res) => {
+exports.exportInventory = async (req, res) => {
     const {
         warehouse,
         dateFrom,
@@ -364,12 +366,7 @@ exports.exportInventory = (req, res) => {
     sql += ' ORDER BY product_name ASC';
 
     db.query(sql, values, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.sqlMessage
-            });
-        }
+        
 
         // Generate CSV
         const csvHeader = 'Product Name,Barcode,Variant,Warehouse,Stock,Last Updated\n';

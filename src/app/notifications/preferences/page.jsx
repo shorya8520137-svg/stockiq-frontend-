@@ -1,15 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Bell, Mail, MessageSquare, Package, Truck, AlertTriangle, Settings, Save, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiRequest } from '@/services/api/config';
-import useRealTimeNotifications from '@/hooks/useRealTimeNotifications';
 import styles from './preferences.module.css';
 
-export default function NotificationPreferences() {
+// Dynamic import for notification hook to prevent SSR issues
+const useRealTimeNotifications = dynamic(
+    () => import('@/hooks/useRealTimeNotifications'),
+    { ssr: false }
+);
+
+function NotificationPreferences() {
     const { user } = useAuth();
-    const { requestNotificationPermission } = useRealTimeNotifications();
+    const [mounted, setMounted] = useState(false);
+    const [browserPermission, setBrowserPermission] = useState('default');
     const [preferences, setPreferences] = useState({
         // Email notifications
         email_mentions: true,
@@ -47,12 +54,30 @@ export default function NotificationPreferences() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState(''); // 'success', 'error', ''
-    const [browserPermission, setBrowserPermission] = useState(Notification.permission);
 
     // Load user preferences
     useEffect(() => {
+        setMounted(true);
         loadPreferences();
+        
+        // Set browser permission status (client-side only)
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            setBrowserPermission(Notification.permission);
+        }
     }, []);
+
+    // Request browser notification permission
+    const requestNotificationPermission = async () => {
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            if (Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                setBrowserPermission(permission);
+                return permission === 'granted';
+            }
+            return Notification.permission === 'granted';
+        }
+        return false;
+    };
 
     const loadPreferences = async () => {
         setIsLoading(true);
@@ -161,12 +186,12 @@ export default function NotificationPreferences() {
         }
     ];
 
-    if (isLoading) {
+    if (!mounted || isLoading) {
         return (
             <div className={styles.container}>
                 <div className={styles.loading}>
                     <div className={styles.spinner}></div>
-                    <p>Loading notification preferences...</p>
+                    <p>{!mounted ? 'Initializing...' : 'Loading notification preferences...'}</p>
                 </div>
             </div>
         );
@@ -419,3 +444,5 @@ export default function NotificationPreferences() {
         </div>
     );
 }
+// Export with SSR disabled to prevent hydration issues
+export default NotificationPreferences;

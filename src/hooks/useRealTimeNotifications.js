@@ -84,7 +84,7 @@ export const useRealTimeNotifications = () => {
         }
 
         // Show browser notification if permission granted
-        if (Notification.permission === 'granted') {
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
             new Notification(notification.title, {
                 body: notification.message,
                 icon: '/favicon.ico',
@@ -199,11 +199,14 @@ export const useRealTimeNotifications = () => {
 
     // Request notification permission
     const requestNotificationPermission = useCallback(async () => {
-        if ('Notification' in window && Notification.permission === 'default') {
-            const permission = await Notification.requestPermission();
-            return permission === 'granted';
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            if (Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                return permission === 'granted';
+            }
+            return Notification.permission === 'granted';
         }
-        return Notification.permission === 'granted';
+        return false;
     }, []);
 
     // Set up WebSocket event listeners

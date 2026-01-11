@@ -13,6 +13,7 @@ const SearchResultsPage = () => {
     const query = searchParams.get('q') || '';
     const type = searchParams.get('type') || 'all';
     
+    const [mounted, setMounted] = useState(false);
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
     const [sortBy, setSortBy] = useState('relevance'); // 'relevance', 'date', 'name'
     const [filterType, setFilterType] = useState(type);
@@ -26,12 +27,17 @@ const SearchResultsPage = () => {
         popularSearches
     } = useGlobalSearch();
 
+    // Ensure component is mounted before performing search
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     // Perform search when component mounts or query changes
     useEffect(() => {
-        if (query) {
+        if (mounted && query) {
             performSearch(query, filterType);
         }
-    }, [query, filterType, performSearch]);
+    }, [mounted, query, filterType, performSearch]);
 
     // Handle filter change
     const handleFilterChange = (newType) => {
@@ -96,6 +102,18 @@ const SearchResultsPage = () => {
         { key: 'date', label: 'Date' },
         { key: 'name', label: 'Name' }
     ];
+
+    // Don't render until mounted to avoid hydration issues
+    if (!mounted) {
+        return (
+            <div className={styles.searchPage}>
+                <div className={styles.loading}>
+                    <div className={styles.spinner}></div>
+                    <p>Loading search...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.searchPage}>

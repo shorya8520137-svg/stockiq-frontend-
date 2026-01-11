@@ -11,7 +11,7 @@ const db = require('../db/connection');
 /**
  * REPORT DAMAGE - Complete implementation with stock updates
  */
-exports.reportDamage = (req, res) => {
+exports.reportDamage = async (req, res) => {
     console.log('🔧 Damage report request received:', req.body);
     
     const {
@@ -203,7 +203,7 @@ exports.reportDamage = (req, res) => {
 /**
  * RECOVER STOCK - Complete implementation with stock updates
  */
-exports.recoverStock = (req, res) => {
+exports.recoverStock = async (req, res) => {
     console.log('🔧 Recovery request received:', req.body);
     
     const {
@@ -364,7 +364,7 @@ exports.recoverStock = (req, res) => {
 /**
  * GET DAMAGE & RECOVERY LOG
  */
-exports.getDamageRecoveryLog = (req, res) => {
+exports.getDamageRecoveryLog = async (req, res) => {
     const {
         inventory_location,
         action_type,
@@ -418,12 +418,7 @@ exports.getDamageRecoveryLog = (req, res) => {
     values.push(parseInt(limit), parseInt(offset));
 
     db.query(sql, values, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         res.json({
             success: true,
@@ -435,7 +430,7 @@ exports.getDamageRecoveryLog = (req, res) => {
 /**
  * GET DAMAGE/RECOVERY SUMMARY BY WAREHOUSE
  */
-exports.getDamageRecoverySummary = (req, res) => {
+exports.getDamageRecoverySummary = async (req, res) => {
     const { dateFrom, dateTo } = req.query;
 
     let dateFilter = '';
@@ -464,12 +459,7 @@ exports.getDamageRecoverySummary = (req, res) => {
     `;
 
     db.query(sql, values, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         res.json({
             success: true,

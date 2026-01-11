@@ -10,7 +10,7 @@ const db = require('../db/connection');
 /**
  * CREATE NEW RETURN
  */
-exports.createReturn = (req, res) => {
+exports.createReturn = async (req, res) => {
     const {
         order_ref,
         awb,
@@ -178,7 +178,7 @@ function addLedgerEntryAndCommit(returnId, barcode, product_type, warehouse, qty
 /**
  * GET ALL RETURNS WITH FILTERS
  */
-exports.getReturns = (req, res) => {
+exports.getReturns = async (req, res) => {
     const {
         warehouse,
         dateFrom,
@@ -226,29 +226,19 @@ exports.getReturns = (req, res) => {
     values.push(parseInt(limit), parseInt(offset));
 
     db.query(sql, values, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         // Get total count
         const countSql = `SELECT COUNT(*) as total FROM returns_main ${whereClause}`;
         const countValues = values.slice(0, -2); // Remove limit and offset
 
         db.query(countSql, countValues, (err, countResult) => {
-            if (err) {
-                return res.status(500).json({
-                    success: false,
-                    error: err.message
-                });
-            }
+            
 
             const total = countResult[0].total;
 
             res.json({
-                success: true,
+            success: true,
                 data: rows,
                 pagination: {
                     page: parseInt(page),
@@ -264,7 +254,7 @@ exports.getReturns = (req, res) => {
 /**
  * GET RETURN BY ID
  */
-exports.getReturnById = (req, res) => {
+exports.getReturnById = async (req, res) => {
     const { id } = req.params;
 
     const sql = `
@@ -277,12 +267,7 @@ exports.getReturnById = (req, res) => {
     `;
 
     db.query(sql, [id], (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         if (rows.length === 0) {
             return res.status(404).json({
@@ -301,7 +286,7 @@ exports.getReturnById = (req, res) => {
 /**
  * GET PRODUCT SUGGESTIONS FOR RETURNS
  */
-exports.getProductSuggestions = (req, res) => {
+exports.getProductSuggestions = async (req, res) => {
     const { search, q } = req.query;
     const searchTerm = search || q; // Support both 'search' and 'q' parameters
 
@@ -322,40 +307,45 @@ exports.getProductSuggestions = (req, res) => {
     const searchPattern = `%${searchTerm}%`;
 
     db.query(sql, [searchPattern, searchPattern, searchPattern], (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+        
 
         res.json(rows);
     });
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 };
 
 /**
  * GET WAREHOUSES - For dropdown
  */
-exports.getWarehouses = (req, res) => {
+exports.getWarehouses = async (req, res) => {
     const sql = `SELECT warehouse_code FROM dispatch_warehouse ORDER BY Warehouse_name`;
 
-    db.query(sql, (err, rows) => {
-        if (err) {
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
-        }
+    try {
+        const [rows] = await db.execute(sql);
+        
 
         const warehouses = rows.map(row => row.warehouse_code);
         res.json(warehouses);
     });
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 };
 
 /**
  * BULK RETURN PROCESSING
  */
-exports.processBulkReturns = (req, res) => {
+exports.processBulkReturns = async (req, res) => {
     const { returns } = req.body;
 
     if (!Array.isArray(returns) || returns.length === 0) {
@@ -446,7 +436,7 @@ function completeBulkReturn(results, res, db) {
             }
 
             res.json({
-                success: true,
+            success: true,
                 message: `All ${successCount} returns processed successfully`,
                 results
             });

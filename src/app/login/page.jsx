@@ -22,17 +22,21 @@ export default function LoginPage() {
         setError("");
         setLoading(true);
 
-        // Simulate loading delay for better UX
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const result = await login(email, password);
 
-        const result = login(email, password);
-
-        if (result.success) {
-            setTimeout(() => {
-                router.push("/products");
-            }, 1000);
-        } else {
-            setError(result.error || "Invalid credentials");
+            if (result.success) {
+                // Success - redirect to dashboard
+                setTimeout(() => {
+                    router.push("/dashboard");
+                }, 1000);
+            } else {
+                setError(result.error || "Invalid email or password. Please check your credentials.");
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            setError("Login failed. Please try again.");
             setLoading(false);
         }
     };
