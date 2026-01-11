@@ -90,7 +90,7 @@ class PermissionsController {
             }
             
             // Log audit
-            await this.createAuditLog(req.user?.userId, 'CREATE_USER', 'USER', userId, {
+            await PermissionsController.createAuditLog(req.user?.userId, 'CREATE_USER', 'USER', userId, {
                 name, email, role_id
             });
             
