@@ -377,12 +377,7 @@ const PermissionsPage = () => {
                         </div>
                     </div>
                     <div className={styles.headerRight}>
-                        <div className={styles.notificationBadge}>
-                            <Bell size={20} />
-                            {unreadNotifications.length > 0 && (
-                                <span className={styles.badge}>{unreadNotifications.length}</span>
-                            )}
-                        </div>
+                        {/* Notification bell moved to main navbar */}
                     </div>
                 </div>
             </div>

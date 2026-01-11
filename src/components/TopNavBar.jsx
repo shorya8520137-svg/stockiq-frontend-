@@ -1,20 +1,93 @@
 "use client";
 
-import React, { useState } from "react";
-import { Search, Bell, User } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, Bell, User, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/contexts/PermissionsContext";
+import notificationService from "@/services/notificationService";
 import styles from "./TopNavBar.module.css";
 
 export default function TopNavBar() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const { userRole } = usePermissions();
     const [searchQuery, setSearchQuery] = useState("");
     const [showNotifications, setShowNotifications] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [searchSuggestions, setSearchSuggestions] = useState([]);
+    const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+
+    // Load notifications on component mount
+    useEffect(() => {
+        loadNotifications();
+
+        // Subscribe to notification changes
+        const unsubscribe = notificationService.subscribe((notifications) => {
+            const userNotifications = notificationService.getNotifications({
+                targetUser: user?.email,
+                targetRole: user?.role
+            });
+            setNotifications(userNotifications);
+        });
+
+        // Cleanup subscription on unmount
+        return unsubscribe;
+    }, [user]);
+
+    const loadNotifications = async () => {
+        try {
+            // Get notifications for current user
+            const userNotifications = notificationService.getNotifications({
+                targetUser: user?.email,
+                targetRole: user?.role
+            });
+            
+            setNotifications(userNotifications);
+        } catch (error) {
+            console.error('Failed to load notifications:', error);
+        }
+    };
 
     const handleSearch = (e) => {
         e.preventDefault();
-        // Implement search functionality here
-        console.log("Searching for:", searchQuery);
+        if (searchQuery.trim()) {
+            // Implement global search functionality here
+            console.log("Searching for:", searchQuery);
+            // TODO: Navigate to search results page or show search modal
+        }
     };
+
+    const handleSearchInput = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+        
+        if (query.length > 2) {
+            // Generate search suggestions (mock data for now)
+            const suggestions = [
+                { type: 'product', title: `Products matching "${query}"`, count: 5 },
+                { type: 'order', title: `Orders matching "${query}"`, count: 3 },
+                { type: 'user', title: `Users matching "${query}"`, count: 2 },
+                { type: 'warehouse', title: `Warehouses matching "${query}"`, count: 1 }
+            ].filter(s => s.count > 0);
+            
+            setSearchSuggestions(suggestions);
+            setShowSearchSuggestions(true);
+        } else {
+            setShowSearchSuggestions(false);
+        }
+    };
+
+    const markNotificationRead = (notificationId) => {
+        notificationService.markAsRead(notificationId);
+    };
+
+    const handleLogout = () => {
+        logout();
+        setShowUserMenu(false);
+    };
+
+    const unreadNotifications = notifications.filter(n => !n.isRead);
+    const recentNotifications = notifications.slice(0, 5); // Show only 5 most recent
 
     return (
         <div className={styles.topNav}>
@@ -26,72 +99,194 @@ export default function TopNavBar() {
                             <Search className={styles.searchIcon} size={18} />
                             <input
                                 type="text"
-                                placeholder="Search orders, products, customers..."
+                                placeholder="Search products, orders, users, warehouses..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={handleSearchInput}
+                                onFocus={() => searchQuery.length > 2 && setShowSearchSuggestions(true)}
+                                onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
                                 className={styles.searchInput}
                             />
+                            
+                            {/* Search Suggestions */}
+                            {showSearchSuggestions && searchSuggestions.length > 0 && (
+                                <div className={styles.searchSuggestions}>
+                                    <div className={styles.suggestionsHeader}>
+                                        <span>Search suggestions</span>
+                                    </div>
+                                    {searchSuggestions.map((suggestion, index) => (
+                                        <div 
+                                            key={index} 
+                                            className={styles.suggestionItem}
+                                            onClick={() => {
+                                                console.log('Navigate to:', suggestion.type, searchQuery);
+                                                setShowSearchSuggestions(false);
+                                            }}
+                                        >
+                                            <div className={styles.suggestionIcon}>
+                                                {suggestion.type === 'product' && '📦'}
+                                                {suggestion.type === 'order' && '📋'}
+                                                {suggestion.type === 'user' && '👤'}
+                                                {suggestion.type === 'warehouse' && '🏢'}
+                                            </div>
+                                            <div className={styles.suggestionContent}>
+                                                <span className={styles.suggestionTitle}>{suggestion.title}</span>
+                                                <span className={styles.suggestionCount}>{suggestion.count} results</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div className={styles.suggestionFooter}>
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                                handleSearch({ preventDefault: () => {} });
+                                                setShowSearchSuggestions(false);
+                                            }}
+                                        >
+                                            View all results for "{searchQuery}"
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </form>
                 </div>
 
                 {/* Actions Section */}
                 <div className={styles.actionsSection}>
-                    {/* Notifications */}
+                    {/* Dynamic Notifications */}
                     <div className={styles.notificationWrapper}>
                         <button
                             className={styles.notificationBtn}
                             onClick={() => setShowNotifications(!showNotifications)}
+                            title={`${unreadNotifications.length} unread notifications`}
                         >
                             <Bell size={18} />
-                            <span className={styles.notificationBadge}>3</span>
+                            {unreadNotifications.length > 0 && (
+                                <span className={styles.notificationBadge}>
+                                    {unreadNotifications.length > 99 ? '99+' : unreadNotifications.length}
+                                </span>
+                            )}
                         </button>
                         
                         {showNotifications && (
                             <div className={styles.notificationDropdown}>
                                 <div className={styles.notificationHeader}>
                                     <h4>Notifications</h4>
-                                    <span className={styles.notificationCount}>3 new</span>
+                                    <span className={styles.notificationCount}>
+                                        {unreadNotifications.length} unread
+                                    </span>
                                 </div>
                                 <div className={styles.notificationList}>
-                                    <div className={styles.notificationItem}>
-                                        <div className={styles.notificationDot}></div>
-                                        <div>
-                                            <p className={styles.notificationTitle}>New order received</p>
-                                            <p className={styles.notificationTime}>2 minutes ago</p>
+                                    {recentNotifications.length === 0 ? (
+                                        <div className={styles.emptyNotifications}>
+                                            <Bell size={24} />
+                                            <p>No notifications yet</p>
                                         </div>
-                                    </div>
-                                    <div className={styles.notificationItem}>
-                                        <div className={styles.notificationDot}></div>
-                                        <div>
-                                            <p className={styles.notificationTitle}>Low stock alert</p>
-                                            <p className={styles.notificationTime}>15 minutes ago</p>
-                                        </div>
-                                    </div>
-                                    <div className={styles.notificationItem}>
-                                        <div className={styles.notificationDot}></div>
-                                        <div>
-                                            <p className={styles.notificationTitle}>Dispatch completed</p>
-                                            <p className={styles.notificationTime}>1 hour ago</p>
-                                        </div>
-                                    </div>
+                                    ) : (
+                                        recentNotifications.map(notification => (
+                                            <div 
+                                                key={notification.id} 
+                                                className={`${styles.notificationItem} ${!notification.isRead ? styles.unread : ''}`}
+                                                onClick={() => markNotificationRead(notification.id)}
+                                            >
+                                                <div className={styles.notificationDot}></div>
+                                                <div className={styles.notificationContent}>
+                                                    <p className={styles.notificationTitle}>{notification.title}</p>
+                                                    <p className={styles.notificationMessage}>{notification.message}</p>
+                                                    <p className={styles.notificationTime}>
+                                                        {new Date(notification.createdAt).toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                                 <div className={styles.notificationFooter}>
-                                    <button className={styles.viewAllBtn}>View all notifications</button>
+                                    <button 
+                                        className={styles.viewAllBtn}
+                                        onClick={() => {
+                                            // Navigate to notifications page
+                                            console.log('Navigate to notifications page');
+                                            setShowNotifications(false);
+                                        }}
+                                    >
+                                        View all notifications
+                                    </button>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* User Profile */}
+                    {/* Enhanced User Profile */}
                     <div className={styles.userProfile}>
-                        <div className={styles.userAvatar}>
-                            <User size={16} />
-                        </div>
-                        <div className={styles.userInfo}>
-                            <span className={styles.userName}>{user?.name || "Admin"}</span>
-                            <span className={styles.userRole}>Administrator</span>
-                        </div>
+                        <button 
+                            className={styles.userProfileBtn}
+                            onClick={() => setShowUserMenu(!showUserMenu)}
+                        >
+                            <div className={styles.userAvatar}>
+                                <User size={16} />
+                            </div>
+                            <div className={styles.userInfo}>
+                                <span className={styles.userName}>{user?.name || "User"}</span>
+                                <span className={styles.userRole}>
+                                    {userRole?.name || user?.role || "User"}
+                                </span>
+                            </div>
+                            <ChevronDown size={14} className={styles.chevronIcon} />
+                        </button>
+
+                        {/* User Menu Dropdown */}
+                        {showUserMenu && (
+                            <div className={styles.userMenuDropdown}>
+                                <div className={styles.userMenuHeader}>
+                                    <div className={styles.userMenuAvatar}>
+                                        <User size={20} />
+                                    </div>
+                                    <div className={styles.userMenuInfo}>
+                                        <span className={styles.userMenuName}>{user?.name}</span>
+                                        <span className={styles.userMenuEmail}>{user?.email}</span>
+                                        <span className={styles.userMenuRole}>
+                                            {userRole?.name || user?.role}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className={styles.userMenuDivider}></div>
+                                <div className={styles.userMenuItems}>
+                                    <button 
+                                        className={styles.userMenuItem}
+                                        onClick={() => {
+                                            console.log('Navigate to profile');
+                                            setShowUserMenu(false);
+                                        }}
+                                    >
+                                        <User size={16} />
+                                        Profile Settings
+                                    </button>
+                                    <button 
+                                        className={styles.userMenuItem}
+                                        onClick={() => {
+                                            console.log('Navigate to preferences');
+                                            setShowUserMenu(false);
+                                        }}
+                                    >
+                                        <Bell size={16} />
+                                        Notification Preferences
+                                    </button>
+                                </div>
+                                <div className={styles.userMenuDivider}></div>
+                                <button 
+                                    className={`${styles.userMenuItem} ${styles.logoutItem}`}
+                                    onClick={handleLogout}
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                        <polyline points="16,17 21,12 16,7"/>
+                                        <line x1="21" y1="12" x2="9" y2="12"/>
+                                    </svg>
+                                    Sign Out
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
