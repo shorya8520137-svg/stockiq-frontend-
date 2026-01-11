@@ -101,8 +101,6 @@ class ProductController {
                 message: 'Failed to fetch products' 
             });
         }
-            });
-        });
     }
 
     // ===============================
