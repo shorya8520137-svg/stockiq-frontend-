@@ -311,13 +311,6 @@ exports.getProductSuggestions = async (req, res) => {
 
         res.json(rows);
     });
-    } catch (error) {
-        console.error('Database error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
 };
 
 /**
@@ -329,10 +322,8 @@ exports.getWarehouses = async (req, res) => {
     try {
         const [rows] = await db.execute(sql);
         
-
         const warehouses = rows.map(row => row.warehouse_code);
         res.json(warehouses);
-    });
     } catch (error) {
         console.error('Database error:', error);
         res.status(500).json({

@@ -285,17 +285,16 @@ exports.getInventoryByWarehouse = async (req, res) => {
     `;
 
     db.query(sql, values, (err, rows) => {
-        
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({
+                success: false,
+                error: err.message
+            });
+        }
 
         res.json(rows);
     });
-    } catch (error) {
-        console.error('Database error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
 };
 
 /**

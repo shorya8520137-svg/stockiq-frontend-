@@ -490,7 +490,7 @@ exports.getDispatches = async (req, res) => {
             const total = countResult[0].total;
 
             res.json({
-                success: true,
+            success: true,
                 data: rows,
                 pagination: {
                     page: parseInt(page),
@@ -602,7 +602,7 @@ exports.getWarehouses = async (req, res) => {
             
             if (rows.length > 0) {
                 return res.json({
-                    success: true,
+            success: true,
                     data: rows
                 });
             }
@@ -644,7 +644,7 @@ exports.getLogistics = async (req, res) => {
             
             if (rows.length > 0) {
                 return res.json({
-                    success: true,
+            success: true,
                     data: rows
                 });
             }
@@ -803,7 +803,7 @@ exports.setupDispatchProducts = async (req, res) => {
         
         if (count > 0) {
             return res.json({
-                success: true,
+            success: true,
                 message: `dispatch_product already has ${count} products`,
                 count
             });
@@ -851,7 +851,7 @@ exports.setupDispatchProducts = async (req, res) => {
                     }
                     
                     res.json({
-                        success: true,
+            success: true,
                         message: 'Sample products added to dispatch_product',
                         inserted: sampleResult.affectedRows
                     });
@@ -860,7 +860,7 @@ exports.setupDispatchProducts = async (req, res) => {
             }
 
             res.json({
-                success: true,
+            success: true,
                 message: 'dispatch_product populated from stock_batches',
                 inserted: result.affectedRows
             });
