@@ -330,6 +330,15 @@ class PermissionsController {
             
         } catch (error) {
             console.error('Get audit logs error:', error);
+            
+            // Handle missing table gracefully
+            if (error.code === 'ER_NO_SUCH_TABLE') {
+                return res.json({
+                    success: true,
+                    data: []
+                });
+            }
+            
             res.status(500).json({
                 success: false,
                 message: 'Failed to fetch audit logs'
