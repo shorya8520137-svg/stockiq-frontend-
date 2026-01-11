@@ -60,53 +60,47 @@ class ProductController {
             ${where}
         `;
 
-        db.query(dataSql, [...params, limit, offset], (err, rows) => {
-            if (err) {
-                console.error('getAllProducts:', err);
-                
-                // Handle missing table gracefully
-                if (err.code === 'ER_NO_SUCH_TABLE') {
-                    return res.json({
-                        success: true,
-                        data: {
-                            products: [],
-                            pagination: {
-                                page,
-                                limit,
-                                total: 0,
-                                pages: 0
-                            }
-                        }
-                    });
-                }
-                
-                return res.status(500).json({ 
-                    success: false, 
-                    message: 'Failed to fetch products' 
-                });
-            }
+        try {
+            // Execute both queries with proper async/await
+            const [rows] = await db.execute(dataSql, [...params, parseInt(limit), parseInt(offset)]);
+            const [countRows] = await db.execute(countSql, params);
 
-            db.query(countSql, params, (err2, countRows) => {
-                if (err2) {
-                    console.error('countProducts:', err2);
-                    return res.status(500).json({ 
-                        success: false, 
-                        message: 'Failed to count products' 
-                    });
-                }
+            const total = countRows[0]?.total || 0;
+            const totalPages = Math.ceil(total / limit);
 
-                res.json({
+            res.json({
+                success: true,
+                data: rows,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total: parseInt(total),
+                    totalPages: parseInt(totalPages)
+                }
+            });
+
+        } catch (err) {
+            console.error('getAllProducts:', err);
+            
+            // Handle missing table gracefully
+            if (err.code === 'ER_NO_SUCH_TABLE') {
+                return res.json({
                     success: true,
-                    data: {
-                        products: rows,
-                        pagination: {
-                            page,
-                            limit,
-                            total: countRows[0].total,
-                            pages: Math.ceil(countRows[0].total / limit)
-                        }
+                    data: [],
+                    pagination: {
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        total: 0,
+                        totalPages: 0
                     }
                 });
+            }
+            
+            res.status(500).json({ 
+                success: false, 
+                message: 'Failed to fetch products' 
+            });
+        }
             });
         });
     }
