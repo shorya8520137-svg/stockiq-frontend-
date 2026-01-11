@@ -36,7 +36,7 @@ class WebSocketService {
                 }
 
                 // Create new socket connection
-                this.socket = io(process.env.NEXT_PUBLIC_API_BASE?.replace('/api', '') || 'http://localhost:5000', {
+                this.socket = io('https://13-201-222-24.nip.io', {
                     auth: {
                         token: token
                     },
