@@ -114,39 +114,51 @@ class ProductController {
     // ===============================
     // GET WAREHOUSES
     // ===============================
-    static getWarehouses(req, res) {
-        db.query(
-            'SELECT w_id, warehouse_code, Warehouse_name, address FROM dispatch_warehouse ORDER BY Warehouse_name',
-            (err, rows) => {
-                if (err) {
-                    console.error('getWarehouses:', err);
-                    return res.status(500).json({ 
-                        success: false, 
-                        message: 'Failed to fetch warehouses' 
-                    });
-                }
-                res.json({ success: true, data: rows });
+    static async getWarehouses(req, res) {
+        try {
+            const [rows] = await db.execute(
+                'SELECT w_id, warehouse_code, Warehouse_name, address FROM dispatch_warehouse ORDER BY Warehouse_name'
+            );
+            
+            res.json({ success: true, data: rows });
+        } catch (err) {
+            console.error('getWarehouses:', err);
+            
+            // Handle missing table gracefully
+            if (err.code === 'ER_NO_SUCH_TABLE') {
+                return res.json({ success: true, data: [] });
             }
-        );
+            
+            res.status(500).json({ 
+                success: false, 
+                message: 'Failed to fetch warehouses' 
+            });
+        }
     }
 
     // ===============================
     // GET STORES
     // ===============================
-    static getStores(req, res) {
-        db.query(
-            'SELECT id, store_code, store_name, city, state FROM stores WHERE is_active = 1 ORDER BY store_name',
-            (err, rows) => {
-                if (err) {
-                    console.error('getStores:', err);
-                    return res.status(500).json({ 
-                        success: false, 
-                        message: 'Failed to fetch stores' 
-                    });
-                }
-                res.json({ success: true, data: rows });
+    static async getStores(req, res) {
+        try {
+            const [rows] = await db.execute(
+                'SELECT id, store_code, store_name, city, state FROM stores WHERE is_active = 1 ORDER BY store_name'
+            );
+            
+            res.json({ success: true, data: rows });
+        } catch (err) {
+            console.error('getStores:', err);
+            
+            // Handle missing table gracefully
+            if (err.code === 'ER_NO_SUCH_TABLE') {
+                return res.json({ success: true, data: [] });
             }
-        );
+            
+            res.status(500).json({ 
+                success: false, 
+                message: 'Failed to fetch stores' 
+            });
+        }
     }
 
     // ===============================
@@ -1209,32 +1221,32 @@ class ProductController {
     // ===============================
     // CATEGORIES
     // ===============================
-    static getCategories(req, res) {
-        db.query(
-            'SELECT id, name, display_name FROM product_categories WHERE is_active = 1',
-            (err, rows) => {
-                if (err) {
-                    console.error('getCategories:', err);
-                    
-                    // Handle missing table gracefully
-                    if (err.code === 'ER_NO_SUCH_TABLE') {
-                        return res.json({ 
-                            success: true, 
-                            data: [] // Return empty array if table doesn't exist
-                        });
-                    }
-                    
-                    return res.status(500).json({ 
-                        success: false, 
-                        message: 'Failed to fetch categories' 
-                    });
-                }
-                res.json({ success: true, data: rows });
+    static async getCategories(req, res) {
+        try {
+            const [rows] = await db.execute(
+                'SELECT id, name, display_name FROM product_categories WHERE is_active = 1'
+            );
+            
+            res.json({ success: true, data: rows });
+        } catch (err) {
+            console.error('getCategories:', err);
+            
+            // Handle missing table gracefully
+            if (err.code === 'ER_NO_SUCH_TABLE') {
+                return res.json({ 
+                    success: true, 
+                    data: [] // Return empty array if table doesn't exist
+                });
             }
-        );
+            
+            res.status(500).json({ 
+                success: false, 
+                message: 'Failed to fetch categories' 
+            });
+        }
     }
 
-    static createCategory(req, res) {
+    static async createCategory(req, res) {
         const { name, display_name, description } = req.body;
 
         if (!name || !display_name) {
