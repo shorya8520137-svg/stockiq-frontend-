@@ -61,12 +61,23 @@ class ProductController {
         `;
 
         try {
+            // Prepare parameters for the data query
+            const dataParams = [...params, parseInt(limit), parseInt(offset)];
+            
+            console.log('🔍 getAllProducts Debug:');
+            console.log('📊 Data SQL:', dataSql);
+            console.log('📊 Data Params:', dataParams);
+            console.log('📊 Count SQL:', countSql);
+            console.log('📊 Count Params:', params);
+            
             // Execute both queries with proper async/await
-            const [rows] = await db.execute(dataSql, [...params, parseInt(limit), parseInt(offset)]);
+            const [rows] = await db.execute(dataSql, dataParams);
             const [countRows] = await db.execute(countSql, params);
 
             const total = countRows[0]?.total || 0;
-            const totalPages = Math.ceil(total / limit);
+            const totalPages = Math.ceil(total / parseInt(limit));
+
+            console.log('✅ Query results:', { rowCount: rows.length, total });
 
             res.json({
                 success: true,
@@ -80,7 +91,12 @@ class ProductController {
             });
 
         } catch (err) {
-            console.error('getAllProducts:', err);
+            console.error('❌ getAllProducts error:', err);
+            console.error('📊 Error details:', {
+                code: err.code,
+                errno: err.errno,
+                sqlMessage: err.sqlMessage
+            });
             
             // Handle missing table gracefully
             if (err.code === 'ER_NO_SUCH_TABLE') {
