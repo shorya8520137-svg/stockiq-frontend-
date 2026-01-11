@@ -387,6 +387,22 @@
     font-size: 13px;
 }
 
+.testNotificationBtn {
+    margin-top: 12px;
+    padding: 6px 12px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.testNotificationBtn:hover {
+    background: #2563eb;
+}
+
 .notificationItem.unread {
     background: #f0f9ff;
     border-left: 3px solid #3b82f6;
@@ -405,6 +421,77 @@
     font-size: 12px;
     color: #64748b;
     line-height: 1.4;
+}
+
+.notificationHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.notificationActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.markAllReadBtn {
+    padding: 4px 8px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.markAllReadBtn:hover {
+    background: #2563eb;
+}
+
+.notificationPriority {
+    margin-left: 4px;
+    font-size: 12px;
+}
+
+/* ================= CONNECTION STATUS ================= */
+.connectionStatus {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.connectedIcon {
+    color: #10b981;
+}
+
+.disconnectedIcon {
+    color: #ef4444;
+}
+
+.notificationBtn.disconnected {
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.connectionWarning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #fef2f2;
+    border-bottom: 1px solid #fecaca;
+    color: #dc2626;
+    font-size: 12px;
 }
 
 /* ================= ENHANCED USER PROFILE ================= */

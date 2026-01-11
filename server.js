@@ -2,7 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const http = require("http");
+const websocketService = require("./services/websocketService");
+
 const app = express();
+
+// Create HTTP server for WebSocket
+const server = http.createServer(app);
 
 // ===============================
 // MIDDLEWARE
@@ -24,6 +30,11 @@ app.use(morgan("dev"));
 require("./db/connection");
 
 // ===============================
+// WEBSOCKET INITIALIZATION
+// ===============================
+websocketService.initialize(server);
+
+// ===============================
 // ROUTES (FRONTEND COMPATIBLE)
 // ===============================
 
@@ -35,6 +46,12 @@ app.use("/api", require("./routes/permissionsRoutes"));
 
 // 🔥 SEARCH ROUTES (ADDED)
 app.use("/api/search", require("./routes/searchRoutes"));
+
+// 🔥 NOTIFICATION ROUTES (ADDED)
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+
+// 🔥 MENTION ROUTES (ADDED)
+app.use("/api/mentions", require("./routes/mentionRoutes"));
 
 app.use("/api/dispatch", require("./routes/dispatchRoutes"));
 app.use("/api/dispatch-beta", require("./routes/dispatchRoutes")); // existing
@@ -106,9 +123,10 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 const HOST = "0.0.0.0";
 
-app.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, () => {
     console.log("======================================");
     console.log("🚀 Inventory Backend Started");
     console.log(`🌍 Port: ${PORT}`);
+    console.log("🔌 WebSocket Server: Enabled");
     console.log("======================================");
 });

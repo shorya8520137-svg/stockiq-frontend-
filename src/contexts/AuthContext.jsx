@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { authAPI } from "../services/api/auth";
+import websocketService from "../services/websocketService";
 
 const AuthContext = createContext(null);
 
@@ -20,7 +21,50 @@ const LEGACY_ROLE_MAPPING = {
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [apiAvailable, setApiAvailable] = useState(true);
+    const [token, setToken] = useState(null);
+
+    useEffect(() => {
+        // Check if user is logged in from localStorage
+        const storedUser = localStorage.getItem("user");
+        const storedToken = localStorage.getItem("authToken");
+        
+        if (storedUser && storedToken) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                // Handle legacy role mapping for existing users
+                if (parsedUser.role) {
+                    parsedUser.role = LEGACY_ROLE_MAPPING[parsedUser.role] || parsedUser.role;
+                }
+                setUser(parsedUser);
+                setToken(storedToken);
+                // Update localStorage with mapped role
+                localStorage.setItem("user", JSON.stringify(parsedUser));
+                
+                // Connect to WebSocket with stored token
+                connectWebSocket(storedToken);
+            } catch (e) {
+                localStorage.removeItem("user");
+                localStorage.removeItem("authToken");
+            }
+        }
+        setLoading(false);
+    }, []);
+
+    // Connect to WebSocket
+    const connectWebSocket = async (authToken) => {
+        try {
+            await websocketService.connect(authToken);
+            console.log('✅ WebSocket connected via AuthContext');
+        } catch (error) {
+            console.error('❌ WebSocket connection failed:', error);
+        }
+    };
+
+    // Disconnect WebSocket
+    const disconnectWebSocket = () => {
+        websocketService.disconnect();
+        console.log('🔌 WebSocket disconnected via AuthContext');
+    };
 
     useEffect(() => {
         // Check if user is logged in from localStorage
@@ -58,7 +102,12 @@ export function AuthProvider({ children }) {
                 };
                 
                 setUser(userData);
+                setToken(response.token);
                 localStorage.setItem("user", JSON.stringify(userData));
+                localStorage.setItem("authToken", response.token);
+                
+                // Connect to WebSocket after successful login
+                await connectWebSocket(response.token);
                 
                 return { success: true, user: userData };
             }
@@ -77,13 +126,19 @@ export function AuthProvider({ children }) {
                 await authAPI.logout();
             }
             
+            // Disconnect WebSocket before clearing user data
+            disconnectWebSocket();
+            
             setUser(null);
+            setToken(null);
             localStorage.removeItem("user");
             localStorage.removeItem("authToken");
         } catch (error) {
             console.error('Logout error:', error);
-            // Clear local storage anyway
+            // Clear local storage and disconnect WebSocket anyway
+            disconnectWebSocket();
             setUser(null);
+            setToken(null);
             localStorage.removeItem("user");
             localStorage.removeItem("authToken");
         }
@@ -111,28 +166,34 @@ export function AuthProvider({ children }) {
             role: user.role,
             action: 'ROLE_SWITCH',
             resource: 'AUTH',
-            details: { oldRole: user.role, newRole, source: apiAvailable ? 'api' : 'local' }
+            details: { oldRole: user.role, newRole, source: 'api' }
         };
         
-        if (!apiAvailable) {
-            const auditLog = JSON.parse(localStorage.getItem('auditLog') || '[]');
-            auditLog.push(switchLog);
-            localStorage.setItem('auditLog', JSON.stringify(auditLog));
-        }
+        console.log('Role switched:', switchLog);
         
         return true;
     };
+
+    // Cleanup WebSocket on unmount
+    useEffect(() => {
+        return () => {
+            disconnectWebSocket();
+        };
+    }, []);
 
     return (
         <AuthContext.Provider
             value={{ 
                 user, 
+                token,
                 login, 
                 logout, 
                 loading, 
                 hasPermission, 
                 switchRole,
-                apiAvailable: true // Always true since we only use real API
+                connectWebSocket,
+                disconnectWebSocket,
+                websocketService // Expose websocket service for direct access
             }}
         >
             {children}

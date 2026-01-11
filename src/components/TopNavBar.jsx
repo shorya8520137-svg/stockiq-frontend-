@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, Bell, User, ChevronDown } from "lucide-react";
+import { Search, Bell, User, ChevronDown, Wifi, WifiOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/contexts/PermissionsContext";
-import notificationService from "@/services/notificationService";
 import useGlobalSearch from "@/hooks/useGlobalSearch";
+import useRealTimeNotifications from "@/hooks/useRealTimeNotifications";
 import styles from "./TopNavBar.module.css";
 
 export default function TopNavBar() {
@@ -13,7 +13,6 @@ export default function TopNavBar() {
     const { userRole } = usePermissions();
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [notifications, setNotifications] = useState([]);
 
     // Use global search hook
     const {
@@ -29,36 +28,22 @@ export default function TopNavBar() {
         showSuggestions: showSuggestionsHandler
     } = useGlobalSearch();
 
-    // Load notifications on component mount
+    // Use real-time notifications hook
+    const {
+        recentNotifications,
+        unreadCount,
+        isConnected,
+        connectionError,
+        markAsRead,
+        markAllAsRead,
+        sendTestNotification,
+        requestNotificationPermission
+    } = useRealTimeNotifications();
+
+    // Request notification permission on mount
     useEffect(() => {
-        loadNotifications();
-
-        // Subscribe to notification changes
-        const unsubscribe = notificationService.subscribe((notifications) => {
-            const userNotifications = notificationService.getNotifications({
-                targetUser: user?.email,
-                targetRole: user?.role
-            });
-            setNotifications(userNotifications);
-        });
-
-        // Cleanup subscription on unmount
-        return unsubscribe;
-    }, [user]);
-
-    const loadNotifications = async () => {
-        try {
-            // Get notifications for current user
-            const userNotifications = notificationService.getNotifications({
-                targetUser: user?.email,
-                targetRole: user?.role
-            });
-            
-            setNotifications(userNotifications);
-        } catch (error) {
-            console.error('Failed to load notifications:', error);
-        }
-    };
+        requestNotificationPermission();
+    }, [requestNotificationPermission]);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -69,8 +54,30 @@ export default function TopNavBar() {
         handleSearchInput(e.target.value);
     };
 
-    const markNotificationRead = (notificationId) => {
-        notificationService.markAsRead(notificationId);
+    const handleNotificationClick = (notification) => {
+        if (!notification.isRead && !notification.read) {
+            markAsRead(notification.id);
+        }
+        
+        // Handle notification click based on type
+        switch (notification.type) {
+            case 'mention':
+                // Navigate to the entity where user was mentioned
+                if (notification.data?.entityType && notification.data?.entityId) {
+                    console.log('Navigate to mention:', notification.data);
+                }
+                break;
+            case 'dispatch_created':
+                // Navigate to dispatch details
+                console.log('Navigate to dispatch:', notification.data);
+                break;
+            case 'low_stock_alert':
+                // Navigate to inventory
+                console.log('Navigate to inventory:', notification.data);
+                break;
+            default:
+                console.log('Handle notification:', notification);
+        }
     };
 
     const handleLogout = () => {
@@ -78,8 +85,16 @@ export default function TopNavBar() {
         setShowUserMenu(false);
     };
 
-    const unreadNotifications = notifications.filter(n => !n.isRead);
-    const recentNotifications = notifications.slice(0, 5); // Show only 5 most recent
+    const formatNotificationTime = (timestamp) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+        
+        if (diffInMinutes < 1) return 'Just now';
+        if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+        return date.toLocaleDateString();
+    };
 
     return (
         <div className={styles.topNav}>
@@ -180,48 +195,91 @@ export default function TopNavBar() {
 
                 {/* Actions Section */}
                 <div className={styles.actionsSection}>
-                    {/* Dynamic Notifications */}
+                    {/* Real-time Notifications */}
                     <div className={styles.notificationWrapper}>
                         <button
-                            className={styles.notificationBtn}
+                            className={`${styles.notificationBtn} ${!isConnected ? styles.disconnected : ''}`}
                             onClick={() => setShowNotifications(!showNotifications)}
-                            title={`${unreadNotifications.length} unread notifications`}
+                            title={`${unreadCount} unread notifications${!isConnected ? ' (Disconnected)' : ''}`}
                         >
                             <Bell size={18} />
-                            {unreadNotifications.length > 0 && (
+                            {unreadCount > 0 && (
                                 <span className={styles.notificationBadge}>
-                                    {unreadNotifications.length > 99 ? '99+' : unreadNotifications.length}
+                                    {unreadCount > 99 ? '99+' : unreadCount}
                                 </span>
                             )}
+                            {/* Connection status indicator */}
+                            <div className={styles.connectionStatus}>
+                                {isConnected ? (
+                                    <Wifi size={10} className={styles.connectedIcon} />
+                                ) : (
+                                    <WifiOff size={10} className={styles.disconnectedIcon} />
+                                )}
+                            </div>
                         </button>
                         
                         {showNotifications && (
                             <div className={styles.notificationDropdown}>
                                 <div className={styles.notificationHeader}>
                                     <h4>Notifications</h4>
-                                    <span className={styles.notificationCount}>
-                                        {unreadNotifications.length} unread
-                                    </span>
+                                    <div className={styles.notificationActions}>
+                                        <span className={styles.notificationCount}>
+                                            {unreadCount} unread
+                                        </span>
+                                        {unreadCount > 0 && (
+                                            <button 
+                                                className={styles.markAllReadBtn}
+                                                onClick={markAllAsRead}
+                                                title="Mark all as read"
+                                            >
+                                                Mark all read
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
+
+                                {/* Connection Status */}
+                                {!isConnected && (
+                                    <div className={styles.connectionWarning}>
+                                        <WifiOff size={16} />
+                                        <span>
+                                            {connectionError ? 'Connection failed' : 'Connecting...'}
+                                        </span>
+                                    </div>
+                                )}
+
                                 <div className={styles.notificationList}>
                                     {recentNotifications.length === 0 ? (
                                         <div className={styles.emptyNotifications}>
                                             <Bell size={24} />
                                             <p>No notifications yet</p>
+                                            <button 
+                                                className={styles.testNotificationBtn}
+                                                onClick={sendTestNotification}
+                                            >
+                                                Send test notification
+                                            </button>
                                         </div>
                                     ) : (
                                         recentNotifications.map(notification => (
                                             <div 
                                                 key={notification.id} 
-                                                className={`${styles.notificationItem} ${!notification.isRead ? styles.unread : ''}`}
-                                                onClick={() => markNotificationRead(notification.id)}
+                                                className={`${styles.notificationItem} ${(!notification.isRead && !notification.read) ? styles.unread : ''}`}
+                                                onClick={() => handleNotificationClick(notification)}
                                             >
                                                 <div className={styles.notificationDot}></div>
                                                 <div className={styles.notificationContent}>
-                                                    <p className={styles.notificationTitle}>{notification.title}</p>
+                                                    <div className={styles.notificationHeader}>
+                                                        <p className={styles.notificationTitle}>{notification.title}</p>
+                                                        <span className={styles.notificationPriority}>
+                                                            {notification.priority === 'high' && '🔴'}
+                                                            {notification.priority === 'urgent' && '🚨'}
+                                                            {notification.priority === 'medium' && '🟡'}
+                                                        </span>
+                                                    </div>
                                                     <p className={styles.notificationMessage}>{notification.message}</p>
                                                     <p className={styles.notificationTime}>
-                                                        {new Date(notification.createdAt).toLocaleString()}
+                                                        {formatNotificationTime(notification.timestamp || notification.created_at)}
                                                     </p>
                                                 </div>
                                             </div>
