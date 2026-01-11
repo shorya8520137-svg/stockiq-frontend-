@@ -197,6 +197,43 @@ class PermissionsController {
         }
     }
     
+    static async createRole(req, res) {
+        try {
+            const { name, display_name, description, color } = req.body;
+            
+            if (!name || !display_name) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Name and display name are required'
+                });
+            }
+            
+            const [result] = await db.execute(`
+                INSERT INTO roles (name, display_name, description, color, is_active, created_at)
+                VALUES (?, ?, ?, ?, true, NOW())
+            `, [name, display_name, description || '', color || '#6366f1']);
+            
+            res.json({
+                success: true,
+                message: 'Role created successfully',
+                data: { id: result.insertId }
+            });
+            
+        } catch (error) {
+            console.error('Create role error:', error);
+            if (error.code === 'ER_DUP_ENTRY') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Role name already exists'
+                });
+            }
+            res.status(500).json({
+                success: false,
+                message: 'Failed to create role'
+            });
+        }
+    }
+    
     // ================= PERMISSION MANAGEMENT ================= //
     
     static async getPermissions(req, res) {
