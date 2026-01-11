@@ -5,17 +5,29 @@ import { Search, Bell, User, ChevronDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/contexts/PermissionsContext";
 import notificationService from "@/services/notificationService";
+import useGlobalSearch from "@/hooks/useGlobalSearch";
 import styles from "./TopNavBar.module.css";
 
 export default function TopNavBar() {
     const { user, logout } = useAuth();
     const { userRole } = usePermissions();
-    const [searchQuery, setSearchQuery] = useState("");
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [notifications, setNotifications] = useState([]);
-    const [searchSuggestions, setSearchSuggestions] = useState([]);
-    const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+
+    // Use global search hook
+    const {
+        searchQuery,
+        suggestions,
+        isSearching,
+        showSuggestions,
+        searchHistory,
+        handleSearchInput,
+        handleSearchSubmit,
+        handleSuggestionClick,
+        hideSuggestions,
+        showSuggestions: showSuggestionsHandler
+    } = useGlobalSearch();
 
     // Load notifications on component mount
     useEffect(() => {
@@ -50,31 +62,11 @@ export default function TopNavBar() {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        if (searchQuery.trim()) {
-            // Implement global search functionality here
-            console.log("Searching for:", searchQuery);
-            // TODO: Navigate to search results page or show search modal
-        }
+        handleSearchSubmit();
     };
 
-    const handleSearchInput = (e) => {
-        const query = e.target.value;
-        setSearchQuery(query);
-        
-        if (query.length > 2) {
-            // Generate search suggestions (mock data for now)
-            const suggestions = [
-                { type: 'product', title: `Products matching "${query}"`, count: 5 },
-                { type: 'order', title: `Orders matching "${query}"`, count: 3 },
-                { type: 'user', title: `Users matching "${query}"`, count: 2 },
-                { type: 'warehouse', title: `Warehouses matching "${query}"`, count: 1 }
-            ].filter(s => s.count > 0);
-            
-            setSearchSuggestions(suggestions);
-            setShowSearchSuggestions(true);
-        } else {
-            setShowSearchSuggestions(false);
-        }
+    const handleSearchInputChange = (e) => {
+        handleSearchInput(e.target.value);
     };
 
     const markNotificationRead = (notificationId) => {
@@ -92,7 +84,7 @@ export default function TopNavBar() {
     return (
         <div className={styles.topNav}>
             <div className={styles.container}>
-                {/* Search Section */}
+                {/* Enhanced Search Section */}
                 <div className={styles.searchSection}>
                     <form onSubmit={handleSearch} className={styles.searchForm}>
                         <div className={styles.searchContainer}>
@@ -101,50 +93,85 @@ export default function TopNavBar() {
                                 type="text"
                                 placeholder="Search products, orders, users, warehouses..."
                                 value={searchQuery}
-                                onChange={handleSearchInput}
-                                onFocus={() => searchQuery.length > 2 && setShowSearchSuggestions(true)}
-                                onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
+                                onChange={handleSearchInputChange}
+                                onFocus={showSuggestionsHandler}
+                                onBlur={hideSuggestions}
                                 className={styles.searchInput}
+                                disabled={isSearching}
                             />
                             
-                            {/* Search Suggestions */}
-                            {showSearchSuggestions && searchSuggestions.length > 0 && (
+                            {/* Real Search Suggestions */}
+                            {showSuggestions && (suggestions.length > 0 || searchHistory.length > 0) && (
                                 <div className={styles.searchSuggestions}>
-                                    <div className={styles.suggestionsHeader}>
-                                        <span>Search suggestions</span>
-                                    </div>
-                                    {searchSuggestions.map((suggestion, index) => (
-                                        <div 
-                                            key={index} 
-                                            className={styles.suggestionItem}
-                                            onClick={() => {
-                                                console.log('Navigate to:', suggestion.type, searchQuery);
-                                                setShowSearchSuggestions(false);
-                                            }}
-                                        >
-                                            <div className={styles.suggestionIcon}>
-                                                {suggestion.type === 'product' && '📦'}
-                                                {suggestion.type === 'order' && '📋'}
-                                                {suggestion.type === 'user' && '👤'}
-                                                {suggestion.type === 'warehouse' && '🏢'}
+                                    {/* Current Suggestions */}
+                                    {suggestions.length > 0 && (
+                                        <>
+                                            <div className={styles.suggestionsHeader}>
+                                                <span>Search suggestions</span>
                                             </div>
-                                            <div className={styles.suggestionContent}>
-                                                <span className={styles.suggestionTitle}>{suggestion.title}</span>
-                                                <span className={styles.suggestionCount}>{suggestion.count} results</span>
+                                            {suggestions.map((suggestion, index) => (
+                                                <div 
+                                                    key={index} 
+                                                    className={styles.suggestionItem}
+                                                    onClick={() => handleSuggestionClick(suggestion)}
+                                                >
+                                                    <div className={styles.suggestionIcon}>
+                                                        {suggestion.icon}
+                                                    </div>
+                                                    <div className={styles.suggestionContent}>
+                                                        <span className={styles.suggestionTitle}>{suggestion.title}</span>
+                                                        <span className={styles.suggestionCount}>{suggestion.count} results</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </>
+                                    )}
+
+                                    {/* Search History */}
+                                    {searchHistory.length > 0 && suggestions.length === 0 && searchQuery.length < 2 && (
+                                        <>
+                                            <div className={styles.suggestionsHeader}>
+                                                <span>Recent searches</span>
                                             </div>
+                                            {searchHistory.slice(0, 3).map((historyItem, index) => (
+                                                <div 
+                                                    key={index} 
+                                                    className={styles.suggestionItem}
+                                                    onClick={() => handleSearchInput(historyItem)}
+                                                >
+                                                    <div className={styles.suggestionIcon}>
+                                                        🕒
+                                                    </div>
+                                                    <div className={styles.suggestionContent}>
+                                                        <span className={styles.suggestionTitle}>{historyItem}</span>
+                                                        <span className={styles.suggestionCount}>Recent search</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </>
+                                    )}
+
+                                    {/* Search All Results */}
+                                    {searchQuery.trim().length >= 2 && (
+                                        <div className={styles.suggestionFooter}>
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    handleSearchSubmit();
+                                                    hideSuggestions();
+                                                }}
+                                            >
+                                                View all results for "{searchQuery}"
+                                            </button>
                                         </div>
-                                    ))}
-                                    <div className={styles.suggestionFooter}>
-                                        <button 
-                                            type="button"
-                                            onClick={() => {
-                                                handleSearch({ preventDefault: () => {} });
-                                                setShowSearchSuggestions(false);
-                                            }}
-                                        >
-                                            View all results for "{searchQuery}"
-                                        </button>
-                                    </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Loading indicator */}
+                            {isSearching && (
+                                <div className={styles.searchLoading}>
+                                    <div className={styles.spinner}></div>
                                 </div>
                             )}
                         </div>

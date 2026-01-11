@@ -33,6 +33,9 @@ app.use("/api/auth", require("./routes/authRoutes"));
 // 🔥 PERMISSIONS ROUTES (ADDED) 
 app.use("/api", require("./routes/permissionsRoutes"));
 
+// 🔥 SEARCH ROUTES (ADDED)
+app.use("/api/search", require("./routes/searchRoutes"));
+
 app.use("/api/dispatch", require("./routes/dispatchRoutes"));
 app.use("/api/dispatch-beta", require("./routes/dispatchRoutes")); // existing
 
