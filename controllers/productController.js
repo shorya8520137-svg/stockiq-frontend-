@@ -8,7 +8,7 @@ class ProductController {
     // ===============================
     // GET PRODUCTS WITH INVENTORY
     // ===============================
-    static getAllProducts(req, res) {
+    static async getAllProducts(req, res) {
         const page = parseInt(req.query.page || 1);
         const limit = parseInt(req.query.limit || 20);
         const search = req.query.search || '';
