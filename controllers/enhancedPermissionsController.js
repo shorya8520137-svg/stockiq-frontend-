@@ -303,7 +303,7 @@ class EnhancedPermissionsController {
         const { userId } = req.params;
         
         const query = `
-            SELECT DISTINCT p.id, p.name, p.description, p.category, p.display_name
+            SELECT DISTINCT p.id, p.name, p.display_name, p.category
             FROM (
                 -- Direct user permissions
                 SELECT up.permission_id
@@ -341,7 +341,6 @@ class EnhancedPermissionsController {
                 permissionsByComponent[perm.category].push({
                     id: perm.id,
                     name: perm.name,
-                    description: perm.description,
                     display_name: perm.display_name
                 });
             });
