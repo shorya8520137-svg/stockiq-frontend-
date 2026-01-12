@@ -72,6 +72,9 @@ app.use("/api/auth", require("./routes/authRoutes"));
 // 🔥 PERMISSIONS ROUTES (ADDED) 
 app.use("/api", require("./routes/permissionsRoutes"));
 
+// 🔥 ENHANCED PERMISSIONS ROUTES (PRODUCTION SYSTEM)
+app.use("/api/enhanced-permissions", require("./routes/enhancedPermissionsRoutes"));
+
 // 🔥 SEARCH ROUTES (ADDED)
 app.use("/api/search", require("./routes/searchRoutes"));
 
