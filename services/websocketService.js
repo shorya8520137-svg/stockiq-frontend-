@@ -37,21 +37,26 @@ class WebSocketService {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
                 
                 // Get user details with role from roles table
-                const [users] = await db.execute(`
+                db.query(`
                     SELECT u.id, u.name, u.email, r.name as role 
                     FROM users u 
                     LEFT JOIN roles r ON u.role_id = r.id 
                     WHERE u.id = ? AND u.status = 'active'
-                `, [decoded.userId]);
+                `, [decoded.userId], (err, users) => {
+                    if (err) {
+                        console.error('WebSocket auth database error:', err);
+                        return socket.emit('error', { message: 'Authentication failed' });
+                    }
 
-                if (users.length === 0) {
-                    return next(new Error('User not found or inactive'));
-                }
+                    if (users.length === 0) {
+                        return socket.emit('error', { message: 'User not found or inactive' });
+                    }
 
-                socket.user = users[0];
-                socket.sessionId = uuidv4();
-                
-                next();
+                    socket.user = users[0];
+                    socket.sessionId = uuidv4();
+                    
+                    next();
+                });
             } catch (error) {
                 console.error('WebSocket authentication error:', error);
                 next(new Error('Authentication failed'));

@@ -28,8 +28,11 @@ class NotificationController {
                 params.push(type);
             }
 
+            // Add limit and offset to params
+            params.push(parseInt(limit), parseInt(offset));
+
             // Get notifications
-            const [notifications] = await db.execute(`
+            db.query(`
                 SELECT 
                     id,
                     type,
@@ -45,42 +48,66 @@ class NotificationController {
                 ${whereClause}
                 ORDER BY created_at DESC 
                 LIMIT ? OFFSET ?
-            `, [...params, parseInt(limit), parseInt(offset)]);
-
-            // Get total count
-            const [countResult] = await db.execute(`
-                SELECT COUNT(*) as total 
-                FROM notification_queue 
-                ${whereClause}
-            `, params);
-
-            // Get unread count
-            const [unreadResult] = await db.execute(`
-                SELECT COUNT(*) as unread 
-                FROM notification_queue 
-                WHERE user_id = ? AND read_at IS NULL
-            `, [userId]);
-
-            // Parse JSON data
-            const processedNotifications = notifications.map(notification => ({
-                ...notification,
-                data: notification.data ? JSON.parse(notification.data) : {},
-                isRead: notification.read_at !== null,
-                isExpired: notification.expires_at && new Date(notification.expires_at) < new Date()
-            }));
-
-            res.json({
-                success: true,
-                data: {
-                    notifications: processedNotifications,
-                    pagination: {
-                        total: countResult[0].total,
-                        unread: unreadResult[0].unread,
-                        limit: parseInt(limit),
-                        offset: parseInt(offset),
-                        hasMore: countResult[0].total > (parseInt(offset) + parseInt(limit))
-                    }
+            `, params, (err, notifications) => {
+                if (err) {
+                    console.error('Get user notifications error:', err);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Failed to fetch notifications'
+                    });
                 }
+
+                // Get total count
+                db.query(`
+                    SELECT COUNT(*) as total 
+                    FROM notification_queue 
+                    ${whereClause}
+                `, [userId], (countErr, countResult) => {
+                    if (countErr) {
+                        console.error('Count notifications error:', countErr);
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Failed to fetch notifications'
+                        });
+                    }
+
+                    // Get unread count
+                    db.query(`
+                        SELECT COUNT(*) as unread 
+                        FROM notification_queue 
+                        WHERE user_id = ? AND read_at IS NULL
+                    `, [userId], (unreadErr, unreadResult) => {
+                        if (unreadErr) {
+                            console.error('Unread notifications error:', unreadErr);
+                            return res.status(500).json({
+                                success: false,
+                                message: 'Failed to fetch notifications'
+                            });
+                        }
+
+                        // Parse JSON data
+                        const processedNotifications = notifications.map(notification => ({
+                            ...notification,
+                            data: notification.data ? JSON.parse(notification.data) : {},
+                            isRead: notification.read_at !== null,
+                            isExpired: notification.expires_at && new Date(notification.expires_at) < new Date()
+                        }));
+
+                        res.json({
+                            success: true,
+                            data: {
+                                notifications: processedNotifications,
+                                pagination: {
+                                    total: countResult[0].total,
+                                    unread: unreadResult[0].unread,
+                                    limit: parseInt(limit),
+                                    offset: parseInt(offset),
+                                    hasMore: countResult[0].total > (parseInt(offset) + parseInt(limit))
+                                }
+                            }
+                        });
+                    });
+                });
             });
 
         } catch (error) {
@@ -88,6 +115,27 @@ class NotificationController {
             
             // Fallback to mock data if database table doesn't exist
             if (error.code === 'ER_NO_SUCH_TABLE') {
+                return res.json({
+                    success: true,
+                    data: {
+                        notifications: [],
+                        pagination: {
+                            total: 0,
+                            unread: 0,
+                            limit: parseInt(req.query.limit || 20),
+                            offset: parseInt(req.query.offset || 0),
+                            hasMore: false
+                        }
+                    }
+                });
+            }
+
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch notifications'
+            });
+        }
+    }
                 return res.json({
                     success: true,
                     data: {

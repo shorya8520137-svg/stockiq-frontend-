@@ -14,19 +14,36 @@ const connectionConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    connectTimeout: 10000
+    connectTimeout: 10000,
+    acquireTimeout: 10000,
+    timeout: 10000,
+    reconnect: true
 };
 
 // ✅ Create MySQL connection
-const db = mysql.createConnection(connectionConfig);
+let db = mysql.createConnection(connectionConfig);
+
+// ✅ Handle connection errors and reconnection
+function handleDisconnect() {
+    db.on('error', function(err) {
+        console.error('Database connection error:', err);
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+            console.log('🔄 Reconnecting to database...');
+            handleDisconnect();
+        } else {
+            throw err;
+        }
+    });
+}
 
 // ✅ Connect and log status
 db.connect((err) => {
     if (err) {
         console.error('❌ Connection failed:', err.message);
-        process.exit(1);
+        setTimeout(handleDisconnect, 2000);
     } else {
         console.log('✅ Connected to MySQL Database:', process.env.DB_HOST);
+        handleDisconnect();
     }
 });
 
