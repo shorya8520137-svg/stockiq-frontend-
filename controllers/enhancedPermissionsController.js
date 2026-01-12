@@ -272,10 +272,11 @@ class EnhancedPermissionsController {
                 
                 -- Role-based permissions
                 SELECT rp.permission_id
-                FROM user_roles ur
-                JOIN role_permissions rp ON ur.role_id = rp.role_id
+                FROM users u
+                JOIN roles r ON u.role_id = r.id
+                JOIN role_permissions rp ON r.id = rp.role_id
                 JOIN permissions p ON rp.permission_id = p.id
-                WHERE ur.user_id = ? AND p.name = ?
+                WHERE u.id = ? AND p.name = ?
             ) as user_perms
             LIMIT 1
         `;
@@ -302,7 +303,7 @@ class EnhancedPermissionsController {
         const { userId } = req.params;
         
         const query = `
-            SELECT DISTINCT p.id, p.name, p.description, p.component, p.action
+            SELECT DISTINCT p.id, p.name, p.description, p.category, p.display_name
             FROM (
                 -- Direct user permissions
                 SELECT up.permission_id
@@ -313,12 +314,13 @@ class EnhancedPermissionsController {
                 
                 -- Role-based permissions
                 SELECT rp.permission_id
-                FROM user_roles ur
-                JOIN role_permissions rp ON ur.role_id = rp.role_id
-                WHERE ur.user_id = ?
+                FROM users u
+                JOIN roles r ON u.role_id = r.id
+                JOIN role_permissions rp ON r.id = rp.role_id
+                WHERE u.id = ?
             ) as effective_perms
             JOIN permissions p ON effective_perms.permission_id = p.id
-            ORDER BY p.component, p.action
+            ORDER BY p.category, p.name
         `;
         
         db.query(query, [userId, userId], (error, results) => {
@@ -333,14 +335,14 @@ class EnhancedPermissionsController {
             // Group permissions by component
             const permissionsByComponent = {};
             results.forEach(perm => {
-                if (!permissionsByComponent[perm.component]) {
-                    permissionsByComponent[perm.component] = [];
+                if (!permissionsByComponent[perm.category]) {
+                    permissionsByComponent[perm.category] = [];
                 }
-                permissionsByComponent[perm.component].push({
+                permissionsByComponent[perm.category].push({
                     id: perm.id,
                     name: perm.name,
                     description: perm.description,
-                    action: perm.action
+                    display_name: perm.display_name
                 });
             });
             
@@ -391,11 +393,13 @@ class EnhancedPermissionsController {
             SELECT 
                 al.id,
                 al.user_id,
-                u.username,
-                u.full_name,
+                u.name as username,
+                u.email,
                 al.action,
-                al.description,
-                al.metadata,
+                al.resource,
+                al.resource_id,
+                al.old_values,
+                al.new_values,
                 al.ip_address,
                 al.created_at
             FROM audit_logs al
@@ -441,7 +445,8 @@ class EnhancedPermissionsController {
                 success: true,
                 audit_logs: results.map(log => ({
                     ...log,
-                    metadata: log.metadata ? JSON.parse(log.metadata) : {}
+                    old_values: log.old_values ? JSON.parse(log.old_values) : null,
+                    new_values: log.new_values ? JSON.parse(log.new_values) : null
                 })),
                 pagination: {
                     page: parseInt(page),
@@ -490,16 +495,16 @@ class EnhancedPermissionsController {
         const query = `
             SELECT 
                 u.id,
-                u.username,
-                u.full_name,
+                u.name as username,
+                u.email,
                 uat.last_activity,
                 uat.current_action,
                 uat.current_component,
-                r.name as role_name
+                r.name as role_name,
+                r.display_name as role_display_name
             FROM user_activity_tracking uat
             JOIN users u ON uat.user_id = u.id
-            LEFT JOIN user_roles ur ON u.id = ur.user_id
-            LEFT JOIN roles r ON ur.role_id = r.id
+            LEFT JOIN roles r ON u.role_id = r.id
             WHERE uat.is_online = 1 
             AND uat.last_activity > DATE_SUB(NOW(), INTERVAL 5 MINUTE)
             ORDER BY uat.last_activity DESC
@@ -576,16 +581,17 @@ class EnhancedPermissionsController {
                 SELECT 1
                 FROM user_permissions up
                 JOIN permissions p ON up.permission_id = p.id
-                WHERE up.user_id = ? AND p.component = ?
+                WHERE up.user_id = ? AND p.category = ?
                 
                 UNION
                 
                 -- Check role-based component permissions
                 SELECT 1
-                FROM user_roles ur
-                JOIN role_permissions rp ON ur.role_id = rp.role_id
+                FROM users u
+                JOIN roles r ON u.role_id = r.id
+                JOIN role_permissions rp ON r.id = rp.role_id
                 JOIN permissions p ON rp.permission_id = p.id
-                WHERE ur.user_id = ? AND p.component = ?
+                WHERE u.id = ? AND p.category = ?
             ) as component_access
             LIMIT 1
         `;

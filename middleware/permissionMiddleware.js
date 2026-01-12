@@ -6,7 +6,7 @@ class PermissionMiddleware {
     // Check if user has specific permission
     static checkPermission(permission) {
         return (req, res, next) => {
-            const userId = req.user?.id;
+            const userId = req.user?.userId || req.user?.id;
             
             if (!userId) {
                 return res.status(401).json({
@@ -28,10 +28,11 @@ class PermissionMiddleware {
                     
                     -- Role-based permissions
                     SELECT rp.permission_id
-                    FROM user_roles ur
-                    JOIN role_permissions rp ON ur.role_id = rp.role_id
+                    FROM users u
+                    JOIN roles r ON u.role_id = r.id
+                    JOIN role_permissions rp ON r.id = rp.role_id
                     JOIN permissions p ON rp.permission_id = p.id
-                    WHERE ur.user_id = ? AND p.name = ?
+                    WHERE u.id = ? AND p.name = ?
                 ) as user_perms
                 LIMIT 1
             `;
@@ -62,7 +63,7 @@ class PermissionMiddleware {
     // Check if user has access to specific component
     static checkComponentAccess(component) {
         return (req, res, next) => {
-            const userId = req.user?.id;
+            const userId = req.user?.userId || req.user?.id;
             
             if (!userId) {
                 return res.status(401).json({
@@ -78,16 +79,17 @@ class PermissionMiddleware {
                     SELECT 1
                     FROM user_permissions up
                     JOIN permissions p ON up.permission_id = p.id
-                    WHERE up.user_id = ? AND p.component = ?
+                    WHERE up.user_id = ? AND p.category = ?
                     
                     UNION
                     
                     -- Check role-based component permissions
                     SELECT 1
-                    FROM user_roles ur
-                    JOIN role_permissions rp ON ur.role_id = rp.role_id
+                    FROM users u
+                    JOIN roles r ON u.role_id = r.id
+                    JOIN role_permissions rp ON r.id = rp.role_id
                     JOIN permissions p ON rp.permission_id = p.id
-                    WHERE ur.user_id = ? AND p.component = ?
+                    WHERE u.id = ? AND p.category = ?
                 ) as component_access
                 LIMIT 1
             `;
