@@ -36,7 +36,7 @@ class WebSocketService {
                 }
 
                 // Create new socket connection
-                this.socket = io('https://13-201-222-24.nip.io', {
+                this.socket = io('http://13-201-222-24.nip.io:5000', {
                     auth: {
                         token: token
                     },

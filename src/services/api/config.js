@@ -1,6 +1,6 @@
 // Central API configuration
 const API_CONFIG = {
-    BASE_URL: 'https://13-201-222-24.nip.io/api',
+    BASE_URL: 'http://13-201-222-24.nip.io:5000/api',
     TIMEOUT: 30000,
     HEADERS: {
         'Content-Type': 'application/json',
