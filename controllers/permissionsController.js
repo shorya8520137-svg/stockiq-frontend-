@@ -163,6 +163,127 @@ class PermissionsController {
             });
         });
     }
+
+    static getPermissions(req, res) {
+        const sql = 'SELECT * FROM permissions ORDER BY category, name';
+        
+        db.query(sql, (err, permissions) => {
+            if (err) {
+                console.error('Get permissions error:', err);
+                return res.json({
+                    success: true,
+                    data: []
+                });
+            }
+            
+            res.json({
+                success: true,
+                data: permissions || []
+            });
+        });
+    }
+
+    static getAuditLogs(req, res) {
+        const sql = `
+            SELECT al.*, u.name as user_name, u.email as user_email
+            FROM audit_logs al
+            LEFT JOIN users u ON al.user_id = u.id
+            ORDER BY al.created_at DESC
+            LIMIT 100
+        `;
+        
+        db.query(sql, (err, logs) => {
+            if (err) {
+                console.error('Get audit logs error:', err);
+                return res.json({
+                    success: true,
+                    data: []
+                });
+            }
+            
+            res.json({
+                success: true,
+                data: logs || []
+            });
+        });
+    }
+
+    static createAuditLogRoute(req, res) {
+        const { action, entity_type, entity_id, details } = req.body;
+        const userId = req.user?.userId;
+        
+        this.createAuditLog(userId, action, entity_type, entity_id, details)
+            .then(() => {
+                res.json({
+                    success: true,
+                    message: 'Audit log created'
+                });
+            })
+            .catch(error => {
+                console.error('Create audit log error:', error);
+                res.status(500).json({
+                    success: false,
+                    message: 'Failed to create audit log'
+                });
+            });
+    }
+
+    static async createAuditLog(userId, action, entityType, entityId, details = {}) {
+        return new Promise((resolve, reject) => {
+            const sql = 'INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details, created_at) VALUES (?, ?, ?, ?, ?, NOW())';
+            
+            db.query(sql, [userId, action, entityType, entityId, JSON.stringify(details)], (err, result) => {
+                if (err) {
+                    console.error('Audit log error:', err);
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    static getSystemStats(req, res) {
+        const stats = {
+            users: { total: 0, active: 0 },
+            roles: { total: 0 },
+            permissions: { total: 0 },
+            auditLogs: { total: 0 }
+        };
+
+        // Get user stats
+        db.query('SELECT COUNT(*) as total, SUM(CASE WHEN status = "active" THEN 1 ELSE 0 END) as active FROM users', (err, userStats) => {
+            if (!err && userStats && userStats[0]) {
+                stats.users = userStats[0];
+            }
+
+            // Get role stats
+            db.query('SELECT COUNT(*) as total FROM roles WHERE is_active = true', (err, roleStats) => {
+                if (!err && roleStats && roleStats[0]) {
+                    stats.roles = roleStats[0];
+                }
+
+                // Get permission stats
+                db.query('SELECT COUNT(*) as total FROM permissions', (err, permStats) => {
+                    if (!err && permStats && permStats[0]) {
+                        stats.permissions = permStats[0];
+                    }
+
+                    // Get audit log stats
+                    db.query('SELECT COUNT(*) as total FROM audit_logs', (err, auditStats) => {
+                        if (!err && auditStats && auditStats[0]) {
+                            stats.auditLogs = auditStats[0];
+                        }
+
+                        res.json({
+                            success: true,
+                            data: stats
+                        });
+                    });
+                });
+            });
+        });
+    }
 }
 
 module.exports = PermissionsController;

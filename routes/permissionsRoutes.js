@@ -284,7 +284,43 @@ router.get('/roles/:roleId',
 router.post('/roles', 
     authenticateToken, 
     checkPermission('SYSTEM_ROLE_MANAGEMENT'), 
-    PermissionsController.createRole
+    async (req, res) => {
+        try {
+            const { name, displayName, description, color } = req.body;
+            
+            if (!name || !displayName) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Name and display name are required'
+                });
+            }
+            
+            const db = require('../db/connection');
+            const sql = 'INSERT INTO roles (name, display_name, description, color, is_active) VALUES (?, ?, ?, ?, true)';
+            
+            db.query(sql, [name, displayName, description || '', color || '#007bff'], (err, result) => {
+                if (err) {
+                    console.error('Create role error:', err);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Failed to create role'
+                    });
+                }
+                
+                res.status(201).json({
+                    success: true,
+                    message: 'Role created successfully',
+                    data: { id: result.insertId, name, displayName, description, color }
+                });
+            });
+        } catch (error) {
+            console.error('Create role error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
+    }
 );
 
 // PUT /api/roles/:roleId - Update role
