@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const inventoryController = require('../controllers/inventoryController');
-const { authenticateToken } = require('../middleware/auth');
+const { optionalAuth } = require('../middleware/optionalAuth');
 
 // Apply authentication to all inventory routes
-router.use(authenticateToken);
+router.use(optionalAuth);
 
 // GET /api/inventory - Get inventory with filtering
 // Example: /api/inventory?warehouse=GGM_WH&dateFrom=2025-01-01&dateTo=2025-12-31&search=product&stockFilter=in-stock&sortBy=product_name&sortOrder=asc&page=1&limit=50
