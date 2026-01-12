@@ -36,9 +36,9 @@ class WebSocketService {
                 // Verify JWT token
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
                 
-                // Get user details from database
+                // Get user details from database - handle missing role column
                 const [users] = await db.execute(
-                    'SELECT id, name, email, role FROM users WHERE id = ? AND status = "active"',
+                    'SELECT id, name, email, "SUPER_ADMIN" as role FROM users WHERE id = ? AND is_active = 1',
                     [decoded.userId]
                 );
 

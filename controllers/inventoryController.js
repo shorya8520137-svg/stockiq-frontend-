@@ -211,12 +211,32 @@ exports.getInventory = async (req, res) => {
             console.error('❌ Inventory query error:', err);
             return res.status(500).json({
                 success: false,
-                error: err.sqlMessage
+                error: err.sqlMessage || err.message
             });
         }
 
         console.log('✅ Query result:', rows.length, 'rows');
         console.log('📊 Sample data:', rows[0] || 'No data');
+
+        // Handle empty results
+        if (!rows || rows.length === 0) {
+            return res.json({
+                success: true,
+                data: [],
+                total: 0,
+                stats: {
+                    totalProducts: 0,
+                    totalStock: 0,
+                    lowStockItems: 0,
+                    outOfStockItems: 0
+                },
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    pages: 0
+                }
+            });
+        }
 
         // Calculate stats
         const totalProducts = rows.length;
