@@ -1,59 +1,62 @@
 const express = require('express');
 const router = express.Router();
 const EnhancedPermissionsController = require('../controllers/enhancedPermissionsController');
+const { authenticateToken, checkRole } = require('../middleware/auth');
 
-// Middleware to check if user is authenticated
-const authenticateUser = (req, res, next) => {
-    // Add your authentication logic here
-    // For now, we'll assume user is in req.user
-    if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Authentication required' });
-    }
-    next();
-};
+// ===== DEBUG ROUTES =====
 
-// Middleware to check admin permissions
-const requireAdmin = (req, res, next) => {
-    // Check if user has admin role
-    if (!req.user || !req.user.role || !['admin', 'super_admin'].includes(req.user.role)) {
-        return res.status(403).json({ success: false, message: 'Admin access required' });
-    }
-    next();
-};
+// Simple test endpoint without authentication
+router.get('/test', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Enhanced permissions routes are working',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Test endpoint with authentication
+router.get('/test-auth', authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        message: 'Authentication is working',
+        user: req.user,
+        timestamp: new Date().toISOString()
+    });
+});
 
 // ===== USER MANAGEMENT ROUTES =====
 
 // Get all users with permissions
-router.get('/users', authenticateUser, requireAdmin, EnhancedPermissionsController.getAllUsers);
+router.get('/users', authenticateToken, checkRole(['admin', 'super_admin']), EnhancedPermissionsController.getAllUsers);
 
 // Create new user
-router.post('/users', authenticateUser, requireAdmin, EnhancedPermissionsController.createUser);
+router.post('/users', authenticateToken, checkRole(['admin', 'super_admin']), EnhancedPermissionsController.createUser);
 
 // Update user permissions
-router.put('/users/:userId/permissions', authenticateUser, requireAdmin, EnhancedPermissionsController.updateUserPermissions);
+router.put('/users/:userId/permissions', authenticateToken, checkRole(['admin', 'super_admin']), EnhancedPermissionsController.updateUserPermissions);
 
 // ===== PERMISSION CHECKING ROUTES =====
 
 // Check if user has specific permission
-router.get('/users/:userId/permissions/:permission/check', authenticateUser, EnhancedPermissionsController.checkUserPermission);
+router.get('/users/:userId/check/:permission', authenticateToken, EnhancedPermissionsController.checkUserPermission);
 
 // Get user's effective permissions
-router.get('/users/:userId/permissions', authenticateUser, EnhancedPermissionsController.getUserEffectivePermissions);
+router.get('/users/:userId/permissions', authenticateToken, EnhancedPermissionsController.getUserEffectivePermissions);
 
 // Check component access
-router.get('/users/:userId/components/:component/access', authenticateUser, EnhancedPermissionsController.checkComponentAccess);
+router.get('/users/:userId/component/:component', authenticateToken, EnhancedPermissionsController.checkComponentAccess);
 
 // ===== AUDIT LOGGING ROUTES =====
 
 // Get audit logs
-router.get('/audit-logs', authenticateUser, requireAdmin, EnhancedPermissionsController.getAuditLogs);
+router.get('/audit-logs', authenticateToken, checkRole(['admin', 'super_admin']), EnhancedPermissionsController.getAuditLogs);
 
 // ===== USER ACTIVITY TRACKING ROUTES =====
 
 // Update user activity
-router.post('/users/:userId/activity', authenticateUser, EnhancedPermissionsController.updateUserActivity);
+router.post('/users/:userId/activity', authenticateToken, EnhancedPermissionsController.updateUserActivity);
 
 // Get online users
-router.get('/users/online', authenticateUser, EnhancedPermissionsController.getOnlineUsers);
+router.get('/users/online', authenticateToken, EnhancedPermissionsController.getOnlineUsers);
 
 module.exports = router;

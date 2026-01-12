@@ -73,7 +73,13 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api", require("./routes/permissionsRoutes"));
 
 // 🔥 ENHANCED PERMISSIONS ROUTES (PRODUCTION SYSTEM)
-app.use("/api/enhanced-permissions", require("./routes/enhancedPermissionsRoutes"));
+console.log('📋 Loading enhanced permissions routes...');
+try {
+    app.use("/api/enhanced-permissions", require("./routes/enhancedPermissionsRoutes"));
+    console.log('✅ Enhanced permissions routes loaded successfully');
+} catch (error) {
+    console.error('❌ Failed to load enhanced permissions routes:', error.message);
+}
 
 // 🔥 SEARCH ROUTES (ADDED)
 app.use("/api/search", require("./routes/searchRoutes"));

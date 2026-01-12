@@ -283,18 +283,18 @@ class PermissionMiddleware {
     // Log access attempts for audit trail
     static logAccess(userId, permission, path, method) {
         const query = `
-            INSERT INTO audit_logs (user_id, action, description, metadata, created_at)
-            VALUES (?, 'ACCESS_GRANTED', ?, ?, NOW())
+            INSERT INTO audit_logs (user_id, action, resource, resource_id, new_values, ip_address, user_agent, created_at)
+            VALUES (?, 'ACCESS_GRANTED', 'PERMISSION_CHECK', ?, ?, ?, ?, NOW())
         `;
         
-        const metadata = JSON.stringify({
+        const accessData = JSON.stringify({
             permission: permission,
             path: path,
             method: method,
             timestamp: new Date().toISOString()
         });
         
-        db.query(query, [userId, `Access granted for ${permission} on ${method} ${path}`, metadata], (error) => {
+        db.query(query, [userId, null, accessData, null, null], (error) => {
             if (error) {
                 console.error('Failed to log access:', error);
             }

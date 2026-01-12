@@ -7,28 +7,24 @@ class EnhancedPermissionsController {
     
     // Get all users with their roles and permissions
     static getAllUsers(req, res) {
+        console.log('🔍 Enhanced Permissions - getAllUsers called');
+        console.log('   User from middleware:', req.user);
+        
         const query = `
             SELECT 
                 u.id,
-                u.username,
+                u.name as username,
                 u.email,
-                u.full_name,
                 u.status,
                 u.created_at,
                 u.last_login,
-                r.name as role_name,
+                r.display_name as role_name,
                 r.id as role_id,
-                GROUP_CONCAT(DISTINCT p.name) as permissions,
-                uat.is_online,
-                uat.last_activity
+                'online' as is_online,
+                NOW() as last_activity
             FROM users u
-            LEFT JOIN user_roles ur ON u.id = ur.user_id
-            LEFT JOIN roles r ON ur.role_id = r.id
-            LEFT JOIN role_permissions rp ON r.id = rp.role_id
-            LEFT JOIN permissions p ON rp.permission_id = p.id
-            LEFT JOIN user_activity_tracking uat ON u.id = uat.user_id
-            WHERE u.deleted_at IS NULL
-            GROUP BY u.id
+            LEFT JOIN roles r ON u.role_id = r.id
+            WHERE u.is_active = 1
             ORDER BY u.created_at DESC
         `;
         
@@ -42,11 +38,13 @@ class EnhancedPermissionsController {
                 });
             }
             
+            console.log('✅ Users fetched successfully:', results.length);
+            
             res.json({
                 success: true,
                 users: results.map(user => ({
                     ...user,
-                    permissions: user.permissions ? user.permissions.split(',') : [],
+                    permissions: [],
                     is_online: Boolean(user.is_online)
                 }))
             });
@@ -56,7 +54,7 @@ class EnhancedPermissionsController {
     // Create new user with role assignment
     static createUser(req, res) {
         const { username, email, password, full_name, role_id, permissions = [] } = req.body;
-        const created_by = req.user?.id;
+        const created_by = req.user?.userId || req.user?.id;
         
         if (!username || !email || !password || !role_id) {
             return res.status(400).json({
@@ -163,7 +161,7 @@ class EnhancedPermissionsController {
     static updateUserPermissions(req, res) {
         const { userId } = req.params;
         const { role_id, permissions = [], action } = req.body; // action: 'grant' or 'revoke'
-        const updated_by = req.user?.id;
+        const updated_by = req.user?.userId || req.user?.id;
         
         if (!userId) {
             return res.status(400).json({ success: false, message: 'User ID is required' });
@@ -358,15 +356,17 @@ class EnhancedPermissionsController {
     
     static logAuditAction(userId, action, description, metadata = {}) {
         const query = `
-            INSERT INTO audit_logs (user_id, action, description, metadata, ip_address, user_agent, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO audit_logs (user_id, action, resource, resource_id, old_values, new_values, ip_address, user_agent, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `;
         
         db.query(query, [
             userId, 
             action, 
-            description, 
-            JSON.stringify(metadata),
+            'PERMISSION_SYSTEM',
+            metadata.resource_id || null,
+            metadata.old_values ? JSON.stringify(metadata.old_values) : null,
+            metadata.new_values ? JSON.stringify(metadata.new_values) : description,
             metadata.ip_address || null,
             metadata.user_agent || null
         ], (error) => {
