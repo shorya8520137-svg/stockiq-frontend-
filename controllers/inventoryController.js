@@ -385,7 +385,13 @@ exports.exportInventory = async (req, res) => {
     sql += ' ORDER BY product_name ASC';
 
     db.query(sql, values, (err, rows) => {
-        
+        if (err) {
+            console.error('❌ Export query error:', err);
+            return res.status(500).json({
+                success: false,
+                error: err.sqlMessage || err.message
+            });
+        }
 
         // Generate CSV
         const csvHeader = 'Product Name,Barcode,Variant,Warehouse,Stock,Last Updated\n';

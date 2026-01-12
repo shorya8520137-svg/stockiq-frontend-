@@ -99,9 +99,16 @@ export default function InventorySheet() {
             console.log('🔗 API URL:', `${API_CONFIG.BASE_URL}/inventory?${params}`);
             console.log('🏢 Selected warehouses for API:', selectedWarehouses);
 
+            // Get auth token from localStorage
+            const token = localStorage.getItem('authToken');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_CONFIG.BASE_URL}/inventory?${params}`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers
             });
 
             if (!response.ok) {
@@ -245,11 +252,16 @@ export default function InventorySheet() {
 
         if (query.length >= 2) {
             try {
+                // Get auth token from localStorage
+                const token = localStorage.getItem('authToken');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
                 const response = await fetch(`${API_CONFIG.BASE_URL}/products?search=${encodeURIComponent(query)}&limit=5`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers
                 });
 
                 if (response.ok) {
@@ -589,8 +601,16 @@ export default function InventorySheet() {
             console.log('🔽 Exporting with params:', params.toString());
             console.log('🏢 Export warehouses:', exportWarehouses.length === 0 ? 'All Warehouses' : exportWarehouses.join(', '));
 
+            // Get auth token from localStorage
+            const token = localStorage.getItem('authToken');
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_CONFIG.BASE_URL}/inventory/export?${params}`, {
-                method: 'GET'
+                method: 'GET',
+                headers
             });
 
             if (response.ok) {

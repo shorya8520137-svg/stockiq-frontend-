@@ -14,8 +14,16 @@ async function apiRequest(endpoint, options = {}) {
 
     try {
         const url = `${API_CONFIG.BASE_URL}${endpoint}`;
+        
+        // Get auth token from localStorage
+        const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+        const headers = { ...API_CONFIG.HEADERS };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const config = {
-            headers: API_CONFIG.HEADERS,
+            headers,
             signal: controller.signal,
             ...options,
         };
