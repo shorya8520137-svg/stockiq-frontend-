@@ -18,6 +18,7 @@ app.use(cors({
         "http://localhost:3000",
         "http://localhost:3001", 
         "https://stockiq-frontend-58vg9s040-test-tests-projects-d6b8ba0b.vercel.app",
+        "https://stockiq-frontend-8np7yu2b9-test-tests-projects-d6b8ba0b.vercel.app",
         "https://*.vercel.app",
         "*"
     ],
