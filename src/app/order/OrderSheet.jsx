@@ -417,8 +417,6 @@ export default function OrderSheet() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 }
-                    'Content-Type': 'application/json'
-                }
             });
             
             const data = await response.json();
