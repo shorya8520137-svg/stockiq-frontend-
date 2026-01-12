@@ -63,4 +63,13 @@ router.get('/category/:category', (req, res) => {
     });
 });
 
+// GET /api/products/search - Search products
+router.get('/search', ProductController.searchProducts);
+
+// GET /api/products/categories - Get categories
+router.get('/categories', ProductController.getCategories);
+
+// POST /api/products/bulk-import - Bulk import products
+router.post('/bulk-import', ProductController.bulkImport);
+
 module.exports = router;
