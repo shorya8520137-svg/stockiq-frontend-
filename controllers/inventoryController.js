@@ -106,6 +106,8 @@ exports.addStock = async (req, res) => {
     });
 };
 
+const db = require('../db/connection');
+
 /**
  * =====================================================
  * GET INVENTORY (PAGINATION + DATE FILTER)
@@ -411,4 +413,5 @@ exports.exportInventory = async (req, res) => {
             error: error.sqlMessage || error.message
         });
     }
+};
 };
