@@ -15,14 +15,6 @@ const server = http.createServer(app);
 // ===============================
 
 // Proper production CORS configuration
-const allowedOrigins = [
-    "https://stockiq-frontend-bgf31pney-test-tests-projects-d6b8ba0b.vercel.app",
-    "https://stockiq-frontend-8np7yu2b9-test-tests-projects-d6b8ba0b.vercel.app", 
-    "https://stockiq-frontend-58vg9s040-test-tests-projects-d6b8ba0b.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:3001"
-];
-
 app.use(cors({
     origin: function (origin, callback) {
         // Log all incoming origins for debugging
@@ -31,13 +23,21 @@ app.use(cors({
         // Allow server-to-server or curl requests (no origin)
         if (!origin) return callback(null, true);
         
-        if (allowedOrigins.includes(origin)) {
-            console.log('✅ Origin allowed:', origin);
+        // Allow localhost for development
+        if (origin === "http://localhost:3000" || 
+            origin === "http://localhost:3001" || 
+            origin === "http://127.0.0.1:3000") {
+            console.log('✅ Localhost origin allowed:', origin);
+            return callback(null, true);
+        }
+        
+        // Allow all Vercel deployments
+        if (origin.endsWith(".vercel.app")) {
+            console.log('✅ Vercel origin allowed:', origin);
             return callback(null, true);
         }
         
         console.log('❌ Origin rejected:', origin);
-        console.log('📋 Allowed origins:', allowedOrigins);
         return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
