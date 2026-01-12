@@ -3,7 +3,7 @@
 echo "🔍 Finding all node processes..."
 ps aux | grep node | grep -v grep
 
-echo "🔪 Killing all node processes (force)..."
+echo "🔪 Killing all node processes (force)..."b
 sudo pkill -9 -f node
 sleep 3
 

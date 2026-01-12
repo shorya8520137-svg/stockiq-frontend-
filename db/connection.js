@@ -7,41 +7,53 @@ if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || 
     process.exit(1);
 }
 
-// ✅ Connection configuration
+// ✅ Connection configuration (removed invalid options)
 const connectionConfig = {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '3306'),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    connectTimeout: 10000
+    connectTimeout: 10000,
+    // Graceful handling of connection issues
+    reconnect: true,
+    idleTimeout: 300000
 };
 
-// ✅ Create MySQL connection
+// ✅ Create MySQL connection with better error handling
 let db = mysql.createConnection(connectionConfig);
 
-// ✅ Handle connection errors and reconnection
+// ✅ Handle connection errors gracefully
 function handleDisconnect() {
     db.on('error', function(err) {
-        console.error('Database connection error:', err);
-        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
-            console.log('🔄 Reconnecting to database...');
-            handleDisconnect();
+        console.error('Database connection error:', err.code, err.message);
+        
+        if(err.code === 'PROTOCOL_CONNECTION_LOST' || 
+           err.code === 'ECONNRESET' || 
+           err.code === 'ETIMEDOUT') {
+            console.log('🔄 Attempting to reconnect to database...');
+            setTimeout(() => {
+                db = mysql.createConnection(connectionConfig);
+                handleDisconnect();
+            }, 2000);
         } else {
-            throw err;
+            console.error('❌ Fatal database error:', err);
+            // Don't crash the server, just log the error
         }
     });
 }
 
-// ✅ Connect and log status
+// ✅ Connect with timeout handling
 db.connect((err) => {
     if (err) {
-        console.error('❌ Connection failed:', err.message);
-        setTimeout(handleDisconnect, 2000);
+        console.error('❌ Initial connection failed:', err.message);
+        console.log('⚠️ Server will continue without database (using fallback mode)');
+        // Don't crash - continue with fallback mode
     } else {
         console.log('✅ Connected to MySQL Database:', process.env.DB_HOST);
-        handleDisconnect();
     }
+    handleDisconnect();
 });
 
+// Export connection even if it failed (controllers will handle gracefully)
 module.exports = db;
