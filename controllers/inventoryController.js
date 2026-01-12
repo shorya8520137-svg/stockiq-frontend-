@@ -412,4 +412,3 @@ exports.exportInventory = async (req, res) => {
         });
     }
 };
-};
