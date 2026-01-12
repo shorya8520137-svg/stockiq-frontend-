@@ -27,98 +27,22 @@ router.put('/:id/status', DispatchController.updateDispatchStatus);
 // ===============================
 
 // GET /api/dispatch/warehouses - Get warehouse list
-router.get('/warehouses', (req, res) => {
-    res.json({
-        success: true,
-        data: [
-            { id: 'WH001', name: 'Main Warehouse' },
-            { id: 'WH002', name: 'Secondary Warehouse' },
-            { id: 'GGM_WH', name: 'GGM Warehouse' }
-        ],
-        message: 'Sample warehouses (fallback mode)'
-    });
-});
+router.get('/warehouses', DispatchController.getWarehouses);
 
 // GET /api/dispatch/logistics - Get logistics list
-router.get('/logistics', (req, res) => {
-    res.json({
-        success: true,
-        data: [
-            { id: 'LOG001', name: 'Express Delivery' },
-            { id: 'LOG002', name: 'Standard Shipping' },
-            { id: 'LOG003', name: 'Local Pickup' }
-        ],
-        message: 'Sample logistics (fallback mode)'
-    });
-});
+router.get('/logistics', DispatchController.getLogistics);
 
 // GET /api/dispatch/processed-persons - Get processed persons list
-router.get('/processed-persons', (req, res) => {
-    res.json({
-        success: true,
-        data: [
-            { id: 'PROC001', name: 'John Doe' },
-            { id: 'PROC002', name: 'Jane Smith' },
-            { id: 'PROC003', name: 'Admin User' }
-        ],
-        message: 'Sample processed persons (fallback mode)'
-    });
-});
+router.get('/processed-persons', DispatchController.getProcessedPersons);
 
 // GET /api/dispatch/payment-modes - Get payment modes list
-router.get('/payment-modes', (req, res) => {
-    res.json({
-        success: true,
-        data: [
-            { id: 'CASH', name: 'Cash' },
-            { id: 'CARD', name: 'Credit/Debit Card' },
-            { id: 'UPI', name: 'UPI Payment' },
-            { id: 'BANK', name: 'Bank Transfer' }
-        ],
-        message: 'Sample payment modes (fallback mode)'
-    });
-});
+router.get('/payment-modes', DispatchController.getPaymentModes);
 
 // GET /api/dispatch/search-products - Search products
-router.get('/search-products', (req, res) => {
-    const { query = '' } = req.query;
-    res.json({
-        success: true,
-        data: [
-            {
-                id: 1,
-                product_name: `Sample Product matching "${query}"`,
-                barcode: '1234567890',
-                category: 'Electronics',
-                current_stock: 100
-            },
-            {
-                id: 2,
-                product_name: `Another Product with "${query}"`,
-                barcode: '0987654321',
-                category: 'Accessories',
-                current_stock: 50
-            }
-        ],
-        message: 'Sample product search results (fallback mode)'
-    });
-});
+router.get('/search-products', DispatchController.searchProducts);
 
 // GET /api/dispatch/check-inventory - Check inventory
-router.get('/check-inventory', (req, res) => {
-    const { warehouse, barcode, qty } = req.query;
-    res.json({
-        success: true,
-        data: {
-            available: true,
-            current_stock: 100,
-            requested_qty: parseInt(qty) || 1,
-            warehouse: warehouse || 'WH001',
-            barcode: barcode || 'SAMPLE123'
-        },
-        message: 'Sample inventory check (fallback mode)'
-    });
-});
+router.get('/check-inventory', DispatchController.checkInventory);
 
 // GET /api/dispatch/setup-products - Setup dispatch products
 router.get('/setup-products', (req, res) => {
