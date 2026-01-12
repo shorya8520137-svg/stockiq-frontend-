@@ -89,7 +89,7 @@ const ProductManager = () => {
         // Show suggestions if query is at least 2 characters
         if (query.length >= 2) {
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('authToken');
                 const response = await fetch(
                     `${API_CONFIG.BASE_URL}/products?search=${encodeURIComponent(query)}&limit=10`,
                     {
@@ -165,7 +165,7 @@ const ProductManager = () => {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('authToken');
             const params = new URLSearchParams({
                 page: currentPage,
                 limit: 20,
@@ -203,7 +203,7 @@ const ProductManager = () => {
 
     const fetchCategories = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('authToken');
             const response = await fetch(`${API_CONFIG.BASE_URL}/products/categories/all`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -299,7 +299,7 @@ const ProductManager = () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('authToken');
             const url = editingProduct
                 ? `${API_CONFIG.BASE_URL}/products/${editingProduct.p_id}`
                 : `${API_CONFIG.BASE_URL}/products`;
@@ -365,7 +365,7 @@ const ProductManager = () => {
         if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('authToken');
             const response = await fetch(`${API_CONFIG.BASE_URL}/products/${productId}`, {
                 method: 'DELETE',
                 headers: {
@@ -486,7 +486,7 @@ const ProductManager = () => {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('authToken');
             const response = await fetch(`${API_CONFIG.BASE_URL}/products/categories`, {
                 method: 'POST',
                 headers: {
@@ -526,7 +526,7 @@ const ProductManager = () => {
 
     const handleScanBarcode = async (barcode) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('authToken');
             const response = await fetch(`${API_CONFIG.BASE_URL}/products/inventory/${barcode}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -559,7 +559,7 @@ const ProductManager = () => {
         try {
             showNotification('Preparing export...', 'success');
             
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('authToken');
             
             // Fetch ALL products (no pagination limit)
             const response = await fetch(
