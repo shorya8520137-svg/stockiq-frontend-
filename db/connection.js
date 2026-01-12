@@ -1,43 +1,33 @@
+require('dotenv').config();
 const mysql = require('mysql2');
 
-// Database configuration
-const dbConfig = {
-    host: 'inventory-db.cv2iey8a8hbk.ap-south-1.rds.amazonaws.com',
-    user: 'admin',
-    password: 'gfx998sd',
-    database: 'hunyhuny_auto_dispatch',
-    port: 3306,
-    multipleStatements: true,
-    connectionLimit: 10,
-    queueLimit: 0
+// ✅ Validate required env vars
+if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
+    console.error('❌ Missing DB credentials in environment');
+    process.exit(1);
+}
+
+// ✅ Connection configuration
+const connectionConfig = {
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || '3306'),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    connectTimeout: 10000
 };
 
-// Create connection pool for better performance (callback version)
-const pool = mysql.createPool(dbConfig);
+// ✅ Create MySQL connection
+const db = mysql.createConnection(connectionConfig);
 
-// Test connection
-pool.getConnection((err, connection) => {
+// ✅ Connect and log status
+db.connect((err) => {
     if (err) {
-        console.error('❌ Database connection failed:', err.message);
-        if (err.code === 'ECONNREFUSED') {
-            console.error('💡 Connection refused - check if database server is running');
-        } else if (err.code === 'ER_ACCESS_DENIED_ERROR') {
-            console.error('💡 Access denied - check username and password');
-        } else if (err.code === 'ENOTFOUND') {
-            console.error('💡 Host not found - check database host address');
-        }
+        console.error('❌ Connection failed:', err.message);
+        process.exit(1);
     } else {
-        console.log('✅ Database connected successfully');
-        connection.release();
+        console.log('✅ Connected to MySQL Database:', process.env.DB_HOST);
     }
 });
 
-// Handle connection errors
-pool.on('error', (err) => {
-    console.error('Database pool error:', err);
-    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-        console.log('Database connection was closed. Reconnecting...');
-    }
-});
-
-module.exports = pool;
+module.exports = db;
