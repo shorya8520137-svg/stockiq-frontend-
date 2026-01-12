@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2');
 
 // Database configuration
 const dbConfig = {
@@ -12,16 +12,12 @@ const dbConfig = {
     queueLimit: 0
 };
 
-// Create connection pool for better performance
+// Create connection pool for better performance (callback version)
 const pool = mysql.createPool(dbConfig);
 
 // Test connection
-async function testConnection() {
-    try {
-        const connection = await pool.getConnection();
-        console.log('✅ Database connected successfully');
-        connection.release();
-    } catch (err) {
+pool.getConnection((err, connection) => {
+    if (err) {
         console.error('❌ Database connection failed:', err.message);
         if (err.code === 'ECONNREFUSED') {
             console.error('💡 Connection refused - check if database server is running');
@@ -30,11 +26,11 @@ async function testConnection() {
         } else if (err.code === 'ENOTFOUND') {
             console.error('💡 Host not found - check database host address');
         }
+    } else {
+        console.log('✅ Database connected successfully');
+        connection.release();
     }
-}
-
-// Test connection on startup
-testConnection();
+});
 
 // Handle connection errors
 pool.on('error', (err) => {

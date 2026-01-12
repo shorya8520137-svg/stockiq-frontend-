@@ -208,92 +208,85 @@ exports.getInventory = async (req, res) => {
     console.log('🔍 Values:', values);
 
     // Test database connection first
-    try {
-        console.log('🔌 Testing database connection...');
-        await new Promise((resolve, reject) => {
-            db.query('SELECT 1 as test', (err, result) => {
-                if (err) {
-                    console.error('❌ Database connection test failed:', err);
-                    reject(err);
-                } else {
-                    console.log('✅ Database connection test passed:', result);
-                    resolve(result);
-                }
-            });
-        });
-    } catch (dbError) {
-        console.error('❌ Database connection failed:', dbError);
-        return res.status(500).json({
-            success: false,
-            error: 'Database connection failed',
-            details: dbError.message
-        });
-    }
-
-    db.query(sql, values, (err, rows) => {
-        if (err) {
-            console.error('❌ Inventory query error:', err);
+    console.log('🔌 Testing database connection...');
+    db.query('SELECT 1 as test', (testErr, testResult) => {
+        if (testErr) {
+            console.error('❌ Database connection test failed:', testErr);
             return res.status(500).json({
                 success: false,
-                error: err.sqlMessage || err.message,
-                sql: sql,
-                values: values
+                error: 'Database connection failed',
+                details: testErr.message
             });
         }
 
-        console.log('✅ Query executed successfully');
-        console.log('📊 Raw query result:', rows);
-        console.log('📊 Result count:', rows ? rows.length : 0);
+        console.log('✅ Database connection test passed:', testResult);
 
-        // Handle empty results
-        if (!rows || rows.length === 0) {
-            console.log('⚠️ No data found, returning empty result');
-            return res.json({
+        // Now execute the main query
+        db.query(sql, values, (err, rows) => {
+            if (err) {
+                console.error('❌ Inventory query error:', err);
+                return res.status(500).json({
+                    success: false,
+                    error: err.sqlMessage || err.message,
+                    sql: sql,
+                    values: values
+                });
+            }
+
+            console.log('✅ Query executed successfully');
+            console.log('📊 Raw query result:', rows);
+            console.log('📊 Result count:', rows ? rows.length : 0);
+
+            // Handle empty results
+            if (!rows || rows.length === 0) {
+                console.log('⚠️ No data found, returning empty result');
+                return res.json({
+                    success: true,
+                    data: [],
+                    total: 0,
+                    stats: {
+                        totalProducts: 0,
+                        totalStock: 0,
+                        lowStockItems: 0,
+                        outOfStockItems: 0
+                    },
+                    pagination: {
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        pages: 0
+                    },
+                    debug: {
+                        sql: sql,
+                        values: values,
+                        filters: filters
+                    }
+                });
+            }
+
+            // Calculate stats
+            const totalProducts = rows.length;
+            const totalStock = rows.reduce((sum, item) => sum + parseInt(item.stock || 0), 0);
+            const lowStockItems = rows.filter(item => parseInt(item.stock || 0) > 0 && parseInt(item.stock || 0) <= 10).length;
+            const outOfStockItems = rows.filter(item => parseInt(item.stock || 0) === 0).length;
+
+            console.log('📊 Calculated stats:', { totalProducts, totalStock, lowStockItems, outOfStockItems });
+
+            res.json({
                 success: true,
-                data: [],
-                total: 0,
+                data: rows,
+                total: totalProducts,
                 stats: {
-                    totalProducts: 0,
-                    totalStock: 0,
-                    lowStockItems: 0,
-                    outOfStockItems: 0
+                    totalProducts,
+                    totalStock,
+                    lowStockItems,
+                    outOfStockItems
                 },
                 pagination: {
                     page: parseInt(page),
                     limit: parseInt(limit),
-                    pages: 0
-                },
-                debug: {
-                    sql: sql,
-                    values: values,
-                    filters: filters
+                    pages: Math.ceil(totalProducts / limit)
                 }
             });
-        }
-
-        // Calculate stats
-        const totalProducts = rows.length;
-        const totalStock = rows.reduce((sum, item) => sum + parseInt(item.stock || 0), 0);
-        const lowStockItems = rows.filter(item => parseInt(item.stock || 0) > 0 && parseInt(item.stock || 0) <= 10).length;
-        const outOfStockItems = rows.filter(item => parseInt(item.stock || 0) === 0).length;
-
-        console.log('📊 Calculated stats:', { totalProducts, totalStock, lowStockItems, outOfStockItems });
-
-        res.json({
-            success: true,
-            data: rows,
-            total: totalProducts,
-            stats: {
-                totalProducts,
-                totalStock,
-                lowStockItems,
-                outOfStockItems
-            },
-            pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
-                pages: Math.ceil(totalProducts / limit)
-            }
         });
     });
 };
