@@ -7,20 +7,18 @@ if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || 
     process.exit(1);
 }
 
-// ✅ Connection configuration (removed invalid options)
+// ✅ Connection configuration (REMOVED ALL INVALID OPTIONS)
 const connectionConfig = {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '3306'),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    connectTimeout: 10000,
-    // Graceful handling of connection issues
-    reconnect: true,
-    idleTimeout: 300000
+    connectTimeout: 10000
+    // REMOVED: acquireTimeout, timeout, reconnect (these cause warnings)
 };
 
-// ✅ Create MySQL connection with better error handling
+// ✅ Create MySQL connection
 let db = mysql.createConnection(connectionConfig);
 
 // ✅ Handle connection errors gracefully
