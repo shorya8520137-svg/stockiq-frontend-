@@ -24,6 +24,7 @@ async function apiRequest(endpoint, options = {}) {
         
         const config = {
             headers,
+            credentials: 'include',
             signal: controller.signal,
             ...options,
         };

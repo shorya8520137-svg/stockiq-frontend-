@@ -13,31 +13,34 @@ const server = http.createServer(app);
 // ===============================
 // MIDDLEWARE
 // ===============================
+
+// Proper production CORS configuration
+const allowedOrigins = [
+    "https://stockiq-frontend-bgf31pney-test-tests-projects-d6b8ba0b.vercel.app",
+    "https://stockiq-frontend-8np7yu2b9-test-tests-projects-d6b8ba0b.vercel.app", 
+    "https://stockiq-frontend-58vg9s040-test-tests-projects-d6b8ba0b.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:3001"
+];
+
 app.use(cors({
-    origin: [
-        "http://localhost:3000",
-        "http://localhost:3001", 
-        "https://stockiq-frontend-58vg9s040-test-tests-projects-d6b8ba0b.vercel.app",
-        "https://stockiq-frontend-8np7yu2b9-test-tests-projects-d6b8ba0b.vercel.app",
-        "https://stockiq-frontend-bgf31pney-test-tests-projects-d6b8ba0b.vercel.app",
-        "https://*.vercel.app",
-        "*"
-    ],
+    origin: function (origin, callback) {
+        // Allow server-to-server or curl requests (no origin)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        
+        return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
-    exposedHeaders: ["Authorization"],
-    preflightContinue: false,
-    optionsSuccessStatus: 200
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// Handle preflight requests
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-    res.sendStatus(200);
-});
+// Let CORS handle OPTIONS properly
+app.options("*", cors());
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -100,7 +103,7 @@ app.use('/api/order-tracking', require('./routes/orderTrackingRoutes'));
 app.use('/api/self-transfer', require('./routes/selfTransferRoutes'));
 
 // ===============================
-// HEALTH CHECK
+// HEALTH CHECK & CORS TEST
 // ===============================
 app.get("/", (req, res) => {
     res.status(200).json({
@@ -113,6 +116,20 @@ app.get("/", (req, res) => {
             products: "/api/products",
             inventory: "/api/inventory"
         }
+    });
+});
+
+app.get("/health/cors", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        message: "CORS is working",
+        origin: req.headers.origin || null,
+        method: req.method,
+        headers: {
+            authorization: req.headers.authorization ? "present" : "missing",
+            contentType: req.headers["content-type"] || null
+        },
+        timestamp: new Date().toISOString()
     });
 });
 
