@@ -123,6 +123,17 @@ app.get("/api", (req, res) => {
     });
 });
 
+// Test endpoint for debugging
+app.get("/api/test", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        message: "Test endpoint working",
+        timestamp: new Date().toISOString(),
+        headers: req.headers,
+        query: req.query
+    });
+});
+
 // ===============================
 // GLOBAL ERROR HANDLER
 // ===============================
