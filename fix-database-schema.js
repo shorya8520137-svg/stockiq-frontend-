@@ -12,34 +12,32 @@ async function fixDatabaseSchema() {
         const [columns] = await db.execute("DESCRIBE users");
         console.log('📋 Current columns:', columns.map(c => c.Field).join(', '));
 
-        // 2. Add role column if missing
-        const hasRole = columns.some(col => col.Field === 'role');
-        if (!hasRole) {
-            console.log('➕ Adding role column...');
-            await db.execute("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'USER' AFTER email");
-            console.log('✅ Role column added');
+        // 2. Check roles table
+        console.log('2️⃣ Checking roles table...');
+        const [roles] = await db.execute("SELECT * FROM roles");
+        console.log('👑 Available roles:', roles.map(r => `${r.id}: ${r.name}`).join(', '));
+
+        // 3. Ensure admin role exists
+        const adminRole = roles.find(r => r.name === 'SUPER_ADMIN' || r.name === 'admin');
+        let adminRoleId;
+        
+        if (!adminRole) {
+            console.log('➕ Creating SUPER_ADMIN role...');
+            const [result] = await db.execute("INSERT INTO roles (name, description) VALUES ('SUPER_ADMIN', 'Super Administrator')");
+            adminRoleId = result.insertId;
+            console.log('✅ SUPER_ADMIN role created with ID:', adminRoleId);
         } else {
-            console.log('✅ Role column already exists');
+            adminRoleId = adminRole.id;
+            console.log('✅ Admin role exists with ID:', adminRoleId);
         }
 
-        // 3. Add status column if missing (for WebSocket compatibility)
-        const hasStatus = columns.some(col => col.Field === 'status');
-        if (!hasStatus) {
-            console.log('➕ Adding status column...');
-            await db.execute("ALTER TABLE users ADD COLUMN status VARCHAR(20) DEFAULT 'active' AFTER role");
-            console.log('✅ Status column added');
-        } else {
-            console.log('✅ Status column already exists');
-        }
-
-        // 4. Update existing users with proper roles
-        console.log('2️⃣ Updating user roles...');
-        await db.execute("UPDATE users SET role = 'SUPER_ADMIN' WHERE email = 'admin@hunyhuny.com'");
-        await db.execute("UPDATE users SET status = 'active' WHERE status IS NULL OR status = ''");
-        console.log('✅ User roles updated');
+        // 4. Update admin user role
+        console.log('3️⃣ Updating admin user role...');
+        await db.execute("UPDATE users SET role_id = ?, status = 'active' WHERE email = 'admin@hunyhuny.com'", [adminRoleId]);
+        console.log('✅ Admin user role updated');
 
         // 5. Check stock_batches table
-        console.log('3️⃣ Checking stock_batches table...');
+        console.log('4️⃣ Checking stock_batches table...');
         const [stockCount] = await db.execute("SELECT COUNT(*) as count FROM stock_batches WHERE status = 'active'");
         console.log(`📦 Active stock items: ${stockCount[0].count}`);
 
@@ -59,11 +57,16 @@ async function fixDatabaseSchema() {
         }
 
         // 6. Verify final state
-        console.log('4️⃣ Final verification...');
-        const [finalUsers] = await db.execute("SELECT id, name, email, role, status FROM users LIMIT 5");
-        console.log('👥 Users:');
+        console.log('5️⃣ Final verification...');
+        const [finalUsers] = await db.execute(`
+            SELECT u.id, u.name, u.email, u.role_id, r.name as role_name, u.status 
+            FROM users u 
+            LEFT JOIN roles r ON u.role_id = r.id 
+            LIMIT 5
+        `);
+        console.log('👥 Users with roles:');
         finalUsers.forEach(user => {
-            console.log(`   - ${user.name} (${user.email}) - ${user.role} - ${user.status}`);
+            console.log(`   - ${user.name} (${user.email}) - Role: ${user.role_name || 'No Role'} - Status: ${user.status}`);
         });
 
         const [finalStock] = await db.execute("SELECT COUNT(*) as count FROM stock_batches WHERE status = 'active'");

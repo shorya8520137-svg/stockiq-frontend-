@@ -36,11 +36,13 @@ class WebSocketService {
                 // Verify JWT token
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
                 
-                // Get user details from database - handle missing role column
-                const [users] = await db.execute(
-                    'SELECT id, name, email, "SUPER_ADMIN" as role FROM users WHERE id = ? AND is_active = 1',
-                    [decoded.userId]
-                );
+                // Get user details with role from roles table
+                const [users] = await db.execute(`
+                    SELECT u.id, u.name, u.email, r.name as role 
+                    FROM users u 
+                    LEFT JOIN roles r ON u.role_id = r.id 
+                    WHERE u.id = ? AND u.status = 'active'
+                `, [decoded.userId]);
 
                 if (users.length === 0) {
                     return next(new Error('User not found or inactive'));
