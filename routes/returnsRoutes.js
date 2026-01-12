@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const returnsController = require('../controllers/returnsController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Apply authentication to all returns routes
+router.use(authenticateToken);
 
 // POST /api/returns - Create new return
 router.post('/', returnsController.createReturn);

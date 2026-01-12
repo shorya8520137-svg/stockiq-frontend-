@@ -45,17 +45,23 @@ export default function TransferForm({ onClose }) {
 
     /* ------------------ LOAD DROPDOWNS ------------------ */
     useEffect(() => {
+        const token = localStorage.getItem('authToken');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         // Load warehouses from dispatch API
-        fetch(`${API}/warehouses`).then(r => r.json()).then(setWarehouses);
+        fetch(`${API}/warehouses`, { headers }).then(r => r.json()).then(setWarehouses);
         
         // Load logistics from dispatch API
-        fetch(`${API}/logistics`).then(r => r.json()).then(setLogistics);
+        fetch(`${API}/logistics`, { headers }).then(r => r.json()).then(setLogistics);
         
         // Load executives from dispatch API
-        fetch(`${API}/processed-persons`).then(r => r.json()).then(setExecutives);
+        fetch(`${API}/processed-persons`, { headers }).then(r => r.json()).then(setExecutives);
         
         // Load stores from products API
-        fetch(`${PRODUCTS_API}/stores`)
+        fetch(`${PRODUCTS_API}/stores`, { headers })
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
@@ -70,7 +76,13 @@ export default function TransferForm({ onClose }) {
         if (!barcode || stockData[barcode]) return;
 
         try {
-            const res = await fetch(`${API_CONFIG.BASE_URL}/product-tracking/${barcode}`);
+            const token = localStorage.getItem('authToken');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const res = await fetch(`${API_CONFIG.BASE_URL}/product-tracking/${barcode}`, { headers });
             const data = await res.json();
             setStockData(prev => ({ ...prev, [barcode]: data.finalStock || 0 }));
         } catch {
@@ -84,7 +96,13 @@ export default function TransferForm({ onClose }) {
         updated[index].name = value;
 
         if (value.length > 2) {
-            const res = await fetch(`${API}/search-products?query=${value}`);
+            const token = localStorage.getItem('authToken');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const res = await fetch(`${API}/search-products?query=${value}`, { headers });
             updated[index].suggestions = await res.json();
         } else {
             updated[index].suggestions = [];
@@ -150,7 +168,10 @@ export default function TransferForm({ onClose }) {
 
             const res = await fetch(`${API_CONFIG.BASE_URL}/self-transfer/create`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem('authToken')}`
+                },
                 body: JSON.stringify(payload),
             });
 

@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const timelineController = require('../controllers/timelineController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Apply authentication to all timeline routes
+router.use(authenticateToken);
 
 /**
  * TIMELINE ROUTES

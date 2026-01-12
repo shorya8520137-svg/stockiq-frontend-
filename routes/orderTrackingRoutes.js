@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const orderTrackingController = require('../controllers/orderTrackingController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Apply authentication to all order tracking routes
+router.use(authenticateToken);
 
 /**
  * DISPATCH TRACKING ROUTES (Updated for Real Data)

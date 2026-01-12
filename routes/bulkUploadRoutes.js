@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const bulkUploadController = require('../controllers/bulkUploadController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Apply authentication to all bulk upload routes
+router.use(authenticateToken);
 
 // POST /api/bulk-upload - Upload bulk inventory data (main endpoint)
 router.post('/', bulkUploadController.bulkUpload);

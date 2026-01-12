@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const damageRecoveryController = require('../controllers/damageRecoveryController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Apply authentication to all damage recovery routes
+router.use(authenticateToken);
 
 // POST /api/damage-recovery/damage - Report damage
 router.post('/damage', damageRecoveryController.reportDamage);

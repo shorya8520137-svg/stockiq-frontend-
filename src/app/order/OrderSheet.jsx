@@ -71,7 +71,13 @@ export default function OrderSheet() {
             setError('');
             
             // Use the updated dispatch tracking API
-            const response = await fetch('https://13-201-222-24.nip.io/api/order-tracking');
+            const token = localStorage.getItem('authToken');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const response = await fetch('https://13-201-222-24.nip.io/api/order-tracking', { headers });
             const data = await response.json();
             
             if (data.success) {
@@ -129,7 +135,13 @@ export default function OrderSheet() {
         setTimelineLoading(true);
         
         try {
-            const response = await fetch(`https://13-201-222-24.nip.io/api/order-tracking/${order.id}/timeline`);
+            const token = localStorage.getItem('authToken');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const response = await fetch(`https://13-201-222-24.nip.io/api/order-tracking/${order.id}/timeline`, { headers });
             const data = await response.json();
             
             if (data.success) {
@@ -398,9 +410,13 @@ export default function OrderSheet() {
         setDeleting(true);
         
         try {
+            const token = localStorage.getItem('authToken');
             const response = await fetch(`https://13-201-222-24.nip.io/api/order-tracking/${dispatchId}`, {
                 method: 'DELETE',
                 headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
                     'Content-Type': 'application/json'
                 }
             });
