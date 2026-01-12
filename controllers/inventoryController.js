@@ -106,6 +106,8 @@ exports.addStock = async (req, res) => {
     });
 };
 
+const db = require('../db/connection');
+
 /**
  * =====================================================
  * GET INVENTORY (PAGINATION + DATE FILTER)
@@ -126,94 +128,88 @@ exports.getInventory = async (req, res) => {
 
     console.log('📦 Inventory API called with filters:', req.query);
 
-    const filters = [`status = 'active'`];
-    const values = [];
+    try {
+        const filters = [`status = 'active'`];
+        const values = [];
 
-    // Warehouse filter
-    if (warehouse) {
-        filters.push('warehouse = ?');
-        values.push(warehouse);
-        console.log('🏢 Filtering by warehouse:', warehouse);
-    }
-
-    // Date filters
-    if (dateFrom) {
-        filters.push('created_at >= ?');
-        values.push(`${dateFrom} 00:00:00`);
-        console.log('📅 Date from:', dateFrom);
-    }
-
-    if (dateTo) {
-        filters.push('created_at <= ?');
-        values.push(`${dateTo} 23:59:59`);
-        console.log('📅 Date to:', dateTo);
-    }
-
-    // Search filter
-    if (search) {
-        filters.push('(product_name LIKE ? OR barcode LIKE ? OR variant LIKE ?)');
-        const searchTerm = `%${search}%`;
-        values.push(searchTerm, searchTerm, searchTerm);
-        console.log('🔍 Search term:', search);
-    }
-
-    const offset = (page - 1) * limit;
-
-    // Base SQL for grouped results
-    let sql = `
-        SELECT
-            barcode,
-            product_name,
-            variant,
-            warehouse,
-            SUM(qty_available) AS stock,
-            MAX(created_at) AS updated_at
-        FROM stock_batches
-        WHERE ${filters.join(' AND ')}
-        GROUP BY barcode, product_name, variant, warehouse
-    `;
-
-    // Stock filter (applied after GROUP BY)
-    if (stockFilter && stockFilter !== 'all') {
-        switch (stockFilter) {
-            case 'in-stock':
-                sql += ' HAVING SUM(qty_available) > 10';
-                break;
-            case 'low-stock':
-                sql += ' HAVING SUM(qty_available) > 0 AND SUM(qty_available) <= 10';
-                break;
-            case 'out-of-stock':
-                sql += ' HAVING SUM(qty_available) = 0';
-                break;
+        // Warehouse filter
+        if (warehouse) {
+            filters.push('warehouse = ?');
+            values.push(warehouse);
+            console.log('🏢 Filtering by warehouse:', warehouse);
         }
-    }
 
-    // Sorting
-    const validSortFields = ['product_name', 'stock', 'warehouse', 'updated_at'];
-    const validSortOrders = ['asc', 'desc'];
-    
-    if (validSortFields.includes(sortBy) && validSortOrders.includes(sortOrder)) {
-        const sortColumn = sortBy === 'stock' ? 'SUM(qty_available)' : sortBy;
-        sql += ` ORDER BY ${sortColumn} ${sortOrder.toUpperCase()}`;
-    } else {
-        sql += ' ORDER BY product_name ASC';
-    }
-
-    // Pagination
-    sql += ' LIMIT ? OFFSET ?';
-    values.push(Number(limit), Number(offset));
-
-    console.log('🔍 Final SQL:', sql);
-    console.log('🔍 Values:', values);
-
-    db.query(sql, values, (err, rows) => {
-        if (err) {
-            console.error('❌ Inventory query error:', err);
-            return res.status(500).json({
-                success: false,
-                error: err.sqlMessage || err.message
-            });
+        // Date filters
+        if (dateFrom) {
+            filters.push('created_at >= ?');
+            values.push(`${dateFrom} 00:00:00`);
+            console.log('📅 Date from:', dateFrom);
         }
+
+        if (dateTo) {
+            filters.push('created_at <= ?');
+            values.push(`${dateTo} 23:59:59`);
+            console.log('📅 Date to:', dateTo);
+        }
+
+        // Search filter
+        if (search) {
+            filters.push('(product_name LIKE ? OR barcode LIKE ? OR variant LIKE ?)');
+            const searchTerm = `%${search}%`;
+            values.push(searchTerm, searchTerm, searchTerm);
+            console.log('🔍 Search term:', search);
+        }
+
+        const offset = (page - 1) * limit;
+
+        // Base SQL for grouped results
+        let sql = `
+            SELECT
+                barcode,
+                product_name,
+                variant,
+                warehouse,
+                SUM(qty_available) AS stock,
+                MAX(created_at) AS updated_at
+            FROM stock_batches
+            WHERE ${filters.join(' AND ')}
+            GROUP BY barcode, product_name, variant, warehouse
+        `;
+
+        // Stock filter (applied after GROUP BY)
+        if (stockFilter && stockFilter !== 'all') {
+            switch (stockFilter) {
+                case 'in-stock':
+                    sql += ' HAVING SUM(qty_available) > 10';
+                    break;
+                case 'low-stock':
+                    sql += ' HAVING SUM(qty_available) > 0 AND SUM(qty_available) <= 10';
+                    break;
+                case 'out-of-stock':
+                    sql += ' HAVING SUM(qty_available) = 0';
+                    break;
+            }
+        }
+
+        // Sorting
+        const validSortFields = ['product_name', 'stock', 'warehouse', 'updated_at'];
+        const validSortOrders = ['asc', 'desc'];
+        
+        if (validSortFields.includes(sortBy) && validSortOrders.includes(sortOrder)) {
+            const sortColumn = sortBy === 'stock' ? 'SUM(qty_available)' : sortBy;
+            sql += ` ORDER BY ${sortColumn} ${sortOrder.toUpperCase()}`;
+        } else {
+            sql += ' ORDER BY product_name ASC';
+        }
+
+        // Pagination
+        sql += ' LIMIT ? OFFSET ?';
+        values.push(Number(limit), Number(offset));
+
+        console.log('🔍 Final SQL:', sql);
+        console.log('🔍 Values:', values);
+
+        const [rows] = await db.execute(sql, values);
 
         console.log('✅ Query result:', rows.length, 'rows');
         console.log('📊 Sample data:', rows[0] || 'No data');
@@ -260,7 +256,14 @@ exports.getInventory = async (req, res) => {
                 pages: Math.ceil(totalProducts / limit)
             }
         });
-    });
+
+    } catch (error) {
+        console.error('❌ Inventory query error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.sqlMessage || error.message
+        });
+    }
 };
 
 /**
@@ -278,43 +281,47 @@ exports.getInventoryByWarehouse = async (req, res) => {
         });
     }
 
-    const filters = ['warehouse = ?', "status = 'active'"];
-    const values = [warehouse];
+    try {
+        const filters = ['warehouse = ?', "status = 'active'"];
+        const values = [warehouse];
 
-    if (dateFrom) {
-        filters.push('created_at >= ?');
-        values.push(`${dateFrom} 00:00:00`);
-    }
-
-    if (dateTo) {
-        filters.push('created_at <= ?');
-        values.push(`${dateTo} 23:59:59`);
-    }
-
-    const sql = `
-        SELECT
-            barcode,
-            product_name AS product,
-            warehouse,
-            SUM(qty_available) AS stock,
-            MAX(created_at) AS updated_at
-        FROM stock_batches
-        WHERE ${filters.join(' AND ')}
-        GROUP BY barcode, product_name, warehouse
-        ORDER BY product_name
-    `;
-
-    db.query(sql, values, (err, rows) => {
-        if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({
-                success: false,
-                error: err.message
-            });
+        if (dateFrom) {
+            filters.push('created_at >= ?');
+            values.push(`${dateFrom} 00:00:00`);
         }
 
-        res.json(rows);
-    });
+        if (dateTo) {
+            filters.push('created_at <= ?');
+            values.push(`${dateTo} 23:59:59`);
+        }
+
+        const sql = `
+            SELECT
+                barcode,
+                product_name AS product,
+                warehouse,
+                SUM(qty_available) AS stock,
+                MAX(created_at) AS updated_at
+            FROM stock_batches
+            WHERE ${filters.join(' AND ')}
+            GROUP BY barcode, product_name, warehouse
+            ORDER BY product_name
+        `;
+
+        const [rows] = await db.execute(sql, values);
+
+        res.json({
+            success: true,
+            data: rows
+        });
+
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 };
 
 /**
@@ -331,67 +338,61 @@ exports.exportInventory = async (req, res) => {
         stockFilter
     } = req.query;
 
-    const filters = [`status = 'active'`];
-    const values = [];
+    try {
+        const filters = [`status = 'active'`];
+        const values = [];
 
-    if (warehouse) {
-        filters.push('warehouse = ?');
-        values.push(warehouse);
-    }
-
-    if (dateFrom) {
-        filters.push('created_at >= ?');
-        values.push(`${dateFrom} 00:00:00`);
-    }
-
-    if (dateTo) {
-        filters.push('created_at <= ?');
-        values.push(`${dateTo} 23:59:59`);
-    }
-
-    if (search) {
-        filters.push('(product_name LIKE ? OR barcode LIKE ? OR variant LIKE ?)');
-        const searchTerm = `%${search}%`;
-        values.push(searchTerm, searchTerm, searchTerm);
-    }
-
-    let sql = `
-        SELECT
-            barcode,
-            product_name,
-            variant,
-            warehouse,
-            SUM(qty_available) AS stock,
-            MAX(created_at) AS updated_at
-        FROM stock_batches
-        WHERE ${filters.join(' AND ')}
-        GROUP BY barcode, product_name, variant, warehouse
-    `;
-
-    if (stockFilter && stockFilter !== 'all') {
-        switch (stockFilter) {
-            case 'in-stock':
-                sql += ' HAVING SUM(qty_available) > 10';
-                break;
-            case 'low-stock':
-                sql += ' HAVING SUM(qty_available) > 0 AND SUM(qty_available) <= 10';
-                break;
-            case 'out-of-stock':
-                sql += ' HAVING SUM(qty_available) = 0';
-                break;
+        if (warehouse) {
+            filters.push('warehouse = ?');
+            values.push(warehouse);
         }
-    }
 
-    sql += ' ORDER BY product_name ASC';
-
-    db.query(sql, values, (err, rows) => {
-        if (err) {
-            console.error('❌ Export query error:', err);
-            return res.status(500).json({
-                success: false,
-                error: err.sqlMessage || err.message
-            });
+        if (dateFrom) {
+            filters.push('created_at >= ?');
+            values.push(`${dateFrom} 00:00:00`);
         }
+
+        if (dateTo) {
+            filters.push('created_at <= ?');
+            values.push(`${dateTo} 23:59:59`);
+        }
+
+        if (search) {
+            filters.push('(product_name LIKE ? OR barcode LIKE ? OR variant LIKE ?)');
+            const searchTerm = `%${search}%`;
+            values.push(searchTerm, searchTerm, searchTerm);
+        }
+
+        let sql = `
+            SELECT
+                barcode,
+                product_name,
+                variant,
+                warehouse,
+                SUM(qty_available) AS stock,
+                MAX(created_at) AS updated_at
+            FROM stock_batches
+            WHERE ${filters.join(' AND ')}
+            GROUP BY barcode, product_name, variant, warehouse
+        `;
+
+        if (stockFilter && stockFilter !== 'all') {
+            switch (stockFilter) {
+                case 'in-stock':
+                    sql += ' HAVING SUM(qty_available) > 10';
+                    break;
+                case 'low-stock':
+                    sql += ' HAVING SUM(qty_available) > 0 AND SUM(qty_available) <= 10';
+                    break;
+                case 'out-of-stock':
+                    sql += ' HAVING SUM(qty_available) = 0';
+                    break;
+            }
+        }
+
+        sql += ' ORDER BY product_name ASC';
+
+        const [rows] = await db.execute(sql, values);
 
         // Generate CSV
         const csvHeader = 'Product Name,Barcode,Variant,Warehouse,Stock,Last Updated\n';
@@ -404,5 +405,13 @@ exports.exportInventory = async (req, res) => {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="inventory-${warehouse || 'all'}-${new Date().toISOString().split('T')[0]}.csv"`);
         res.send(csv);
-    });
+
+    } catch (error) {
+        console.error('❌ Export query error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.sqlMessage || error.message
+        });
+    }
+};
 };
