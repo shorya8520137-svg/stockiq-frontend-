@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const dispatchController = require('../controllers/dispatchController');
+const { authenticateToken } = require('../middleware/auth');
+
+// Apply authentication to all dispatch routes
+router.use(authenticateToken);
 
 // POST /api/dispatch - Create new dispatch
 router.post('/', dispatchController.createDispatch);

@@ -1,9 +1,13 @@
 const express = require('express');
 const multer = require('multer');
 const ProductController = require('../controllers/productController');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
+
+// Apply authentication to all product routes
+router.use(authenticateToken);
 
 // Product CRUD
 router.get('/', ProductController.getAllProducts);

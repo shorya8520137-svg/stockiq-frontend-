@@ -6,9 +6,22 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createDispatchNotification } from '@/services/notificationService';
 
 /* ✅ UPDATED API ENDPOINTS */
-import { API_CONFIG } from '@/services/api/config';
+import { API_CONFIG, apiRequest } from '@/services/api/config';
 const API = `${API_CONFIG.BASE_URL}/dispatch`;
 const CREATE_API = `${API_CONFIG.BASE_URL}/dispatch`;
+
+// Helper function to make authenticated requests
+const fetchWithAuth = async (url, options = {}) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return fetch(url, { ...options, headers });
+};
 
 export default function DispatchForm() {
     const { logAction } = usePermissions();
@@ -51,7 +64,7 @@ export default function DispatchForm() {
     useEffect(() => {
         console.log('🔄 Loading dropdown data...');
         
-        fetch(`${API}/warehouses`)
+        fetchWithAuth(`${API}/warehouses`)
             .then(r => {
                 console.log('📦 Warehouses response status:', r.status);
                 return r.json();
@@ -62,7 +75,7 @@ export default function DispatchForm() {
             })
             .catch(err => console.error('❌ Warehouses error:', err));
             
-        fetch(`${API}/logistics`)
+        fetchWithAuth(`${API}/logistics`)
             .then(r => {
                 console.log('🚚 Logistics response status:', r.status);
                 return r.json();
@@ -73,7 +86,7 @@ export default function DispatchForm() {
             })
             .catch(err => console.error('❌ Logistics error:', err));
             
-        fetch(`${API}/processed-persons`)
+        fetchWithAuth(`${API}/processed-persons`)
             .then(r => {
                 console.log('👤 Executives response status:', r.status);
                 return r.json();
@@ -95,7 +108,7 @@ export default function DispatchForm() {
             const url = `${API}/check-inventory?warehouse=${encodeURIComponent(form.selectedWarehouse)}&barcode=${barcode}&qty=1`;
             console.log('📦 Stock check URL:', url);
             
-            const res = await fetch(url);
+            const res = await fetchWithAuth(url);
             const data = await res.json();
             
             console.log('📦 Stock check result:', data);
@@ -128,7 +141,7 @@ export default function DispatchForm() {
             const url = `${API}/check-inventory?warehouse=${encodeURIComponent(form.selectedWarehouse)}&barcode=${barcode}&qty=${qty}`;
             console.log('🔍 Validation URL:', url);
             
-            const res = await fetch(url);
+            const res = await fetchWithAuth(url);
             const result = await res.json();
             
             console.log('🔍 Validation result:', result);
@@ -154,7 +167,7 @@ export default function DispatchForm() {
 
         if (value.length > 2) {
             try {
-                const res = await fetch(`${API}/search-products?query=${encodeURIComponent(value)}`);
+                const res = await fetchWithAuth(`${API}/search-products?query=${encodeURIComponent(value)}`);
                 if (res.ok) {
                     const data = await res.json();
                     // Handle both array response and object with data property
@@ -255,9 +268,8 @@ export default function DispatchForm() {
                 user: user?.email || 'unknown'
             });
 
-            const res = await fetch(`${CREATE_API}/create`, {
+            const res = await fetchWithAuth(`${CREATE_API}/create`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
 
