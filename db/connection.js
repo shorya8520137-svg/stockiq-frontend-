@@ -14,10 +14,7 @@ const connectionConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    connectTimeout: 10000,
-    acquireTimeout: 10000,
-    timeout: 10000,
-    reconnect: true
+    connectTimeout: 10000
 };
 
 // ✅ Create MySQL connection

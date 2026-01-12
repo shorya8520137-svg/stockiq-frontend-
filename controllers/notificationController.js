@@ -136,28 +136,6 @@ class NotificationController {
             });
         }
     }
-                return res.json({
-                    success: true,
-                    data: {
-                        notifications: [],
-                        pagination: {
-                            total: 0,
-                            unread: 0,
-                            limit: parseInt(req.query.limit || 20),
-                            offset: parseInt(req.query.offset || 0),
-                            hasMore: false
-                        }
-                    }
-                });
-            }
-
-            res.status(500).json({
-                success: false,
-                message: 'Failed to fetch notifications',
-                error: error.message
-            });
-        }
-    }
 
     // ===============================
     // MARK NOTIFICATION AS READ
