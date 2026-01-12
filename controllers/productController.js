@@ -8,46 +8,114 @@ class ProductController {
     // ===============================
     // GET PRODUCTS WITH INVENTORY
     // ===============================
-    static async getAllProducts(req, res) {
-        try {
-            console.log('🔍 Simple products API called');
-            
-            // Return empty data for now to stop the errors
-            res.json({
-                success: true,
-                data: [],
-                pagination: {
-                    page: 1,
-                    limit: 20,
-                    total: 0,
-                    totalPages: 0
-                }
-            });
-            
-        } catch (err) {
-            console.error('❌ Products API error:', err.message);
-            res.status(500).json({ 
-                success: false, 
-                message: 'Failed to fetch products' 
-            });
+    static getAllProducts(req, res) {
+        console.log('🔍 Products API called');
+        
+        const { page = 1, limit = 20, search = '', category = '' } = req.query;
+        const offset = (page - 1) * limit;
+        
+        let sql = `
+            SELECT 
+                p_id,
+                product_name,
+                barcode,
+                product_variant,
+                category,
+                created_at
+            FROM products 
+            WHERE 1=1
+        `;
+        
+        const values = [];
+        
+        if (search) {
+            sql += ' AND (product_name LIKE ? OR barcode LIKE ?)';
+            values.push(`%${search}%`, `%${search}%`);
         }
+        
+        if (category) {
+            sql += ' AND category = ?';
+            values.push(category);
+        }
+        
+        sql += ' ORDER BY product_name ASC LIMIT ? OFFSET ?';
+        values.push(parseInt(limit), parseInt(offset));
+        
+        db.query(sql, values, (err, rows) => {
+            if (err) {
+                console.error('❌ Products query error:', err);
+                
+                // Handle missing table gracefully
+                if (err.code === 'ER_NO_SUCH_TABLE') {
+                    return res.json({
+                        success: true,
+                        data: [],
+                        pagination: {
+                            page: parseInt(page),
+                            limit: parseInt(limit),
+                            total: 0,
+                            totalPages: 0
+                        }
+                    });
+                }
+                
+                return res.status(500).json({ 
+                    success: false, 
+                    message: 'Failed to fetch products',
+                    error: err.message
+                });
+            }
+            
+            // Get total count
+            db.query('SELECT COUNT(*) as total FROM products', (countErr, countResult) => {
+                const total = countErr ? 0 : countResult[0].total;
+                const totalPages = Math.ceil(total / limit);
+                
+                res.json({
+                    success: true,
+                    data: rows || [],
+                    pagination: {
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        total: total,
+                        totalPages: totalPages
+                    }
+                });
+            });
+        });
     }
 
     // ===============================
     // GET WAREHOUSES
     // ===============================
-    static async getWarehouses(req, res) {
-        try {
-            const [rows] = await db.execute(
-                'SELECT w_id, warehouse_code, Warehouse_name, address FROM dispatch_warehouse ORDER BY Warehouse_name'
-            );
-            
-            res.json({ success: true, data: rows });
-        } catch (err) {
-            console.error('getWarehouses:', err);
-            
-            // Handle missing table gracefully
-            if (err.code === 'ER_NO_SUCH_TABLE') {
+    static getWarehouses(req, res) {
+        db.query(
+            'SELECT w_id, warehouse_code, Warehouse_name, address FROM dispatch_warehouse ORDER BY Warehouse_name',
+            (err, rows) => {
+                if (err) {
+                    console.error('getWarehouses:', err);
+                    
+                    // Handle missing table gracefully
+                    if (err.code === 'ER_NO_SUCH_TABLE') {
+                        return res.json({ 
+                            success: true, 
+                            data: [
+                                { w_id: 1, warehouse_code: 'GGM_WH', Warehouse_name: 'Gurgaon Warehouse' },
+                                { w_id: 2, warehouse_code: 'BLR_WH', Warehouse_name: 'Bangalore Warehouse' }
+                            ]
+                        });
+                    }
+                    
+                    return res.status(500).json({ 
+                        success: false, 
+                        message: 'Failed to fetch warehouses' 
+                    });
+                }
+                
+                res.json({ success: true, data: rows });
+            }
+        );
+    }
                 return res.json({ success: true, data: [] });
             }
             
