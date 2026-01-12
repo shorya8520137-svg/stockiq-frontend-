@@ -77,7 +77,7 @@ export default function OrderSheet() {
                 headers['Authorization'] = `Bearer ${token}`;
             }
             
-            const response = await fetch('http://13-201-222-24.nip.io:5000/api/order-tracking', { headers });
+            const response = await fetch('/api/order-tracking', { headers });
             const data = await response.json();
             
             if (data.success) {
@@ -141,7 +141,7 @@ export default function OrderSheet() {
                 headers['Authorization'] = `Bearer ${token}`;
             }
             
-            const response = await fetch(`http://13-201-222-24.nip.io:5000/api/order-tracking/${order.id}/timeline`, { headers });
+            const response = await fetch(`/api/order-tracking/${order.id}/timeline`, { headers });
             const data = await response.json();
             
             if (data.success) {
@@ -411,7 +411,7 @@ export default function OrderSheet() {
         
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`http://13-201-222-24.nip.io:5000/api/order-tracking/${dispatchId}`, {
+            const response = await fetch(`/api/order-tracking/${dispatchId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

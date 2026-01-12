@@ -1,7 +1,7 @@
 // Legacy API utilities - DEPRECATED
 // Use the new API services in src/services/api/ instead
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "http://13-201-222-24.nip.io:5000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "/api";
 const API_TIMEOUT = parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT) || 30000;
 
 // Legacy function - use apiRequest from src/services/api/index.js instead
